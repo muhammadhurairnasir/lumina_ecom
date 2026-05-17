@@ -6,7 +6,7 @@ import * as blog from '../controllers/blogController';
 const router = Router();
 
 // Temporary seed route (no auth required)
-router.post('/seed-blog', async (req, res) => {
+router.all('/seed-blog', async (req, res) => {
   try {
     const { execSync } = require('child_process')
     execSync('node seedBlog.js', { cwd: process.cwd().includes('src') 

@@ -8,11 +8,10 @@ const router = Router();
 // Temporary seed route (no auth required)
 router.all('/seed-blog', async (req, res) => {
   try {
+    const path = require('path')
     const { execSync } = require('child_process')
-    execSync('node seedBlog.js', { cwd: process.cwd().includes('src') 
-      ? require('path').join(process.cwd(), '..') 
-      : process.cwd() 
-    })
+    const seedScript = path.join(__dirname, '../../seedBlog.js')
+    execSync(`node "${seedScript}"`)
     res.json({ success: true, message: 'Blog seeded successfully' })
   } catch (error: any) {
     res.json({ success: false, error: error.message })

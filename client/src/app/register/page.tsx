@@ -24,7 +24,7 @@ const registerSchema = z.object({
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
@@ -63,8 +63,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#F9FAFB] flex flex-col justify-center py-12" />}>
-      <div className="min-h-screen bg-[#F9FAFB] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F9FAFB] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-text-primary">
           Create an account
@@ -166,7 +165,14 @@ export default function RegisterPage() {
           </form>
         </div>
       </div>
-      </div>
+    </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F9FAFB] flex flex-col justify-center py-12" />}>
+      <RegisterForm />
     </Suspense>
   );
 }

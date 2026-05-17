@@ -9,6 +9,14 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { SlidersHorizontal, X } from 'lucide-react';
 
 export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div className="bg-background min-h-screen pb-20" />}>
+      <ProductsContent />
+    </Suspense>
+  );
+}
+
+function ProductsContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -84,8 +92,7 @@ export default function ProductsPage() {
   const totalPages = data?.totalPages || 1;
 
   return (
-    <Suspense fallback={<div className="bg-background min-h-screen pb-20" />}>
-      <div className="bg-background min-h-screen pb-20">
+    <div className="bg-background min-h-screen pb-20">
       
       {/* Page Header */}
       <div className="bg-white border-b border-border py-8">
@@ -293,8 +300,6 @@ export default function ProductsPage() {
           </div>
         </div>
       )}
-
-      </div>
-    </Suspense>
+    </div>
   );
 }

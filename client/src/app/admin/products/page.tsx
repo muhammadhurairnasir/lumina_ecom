@@ -78,6 +78,7 @@ export default function AdminProductsPage() {
                 <th className="px-5 py-3 font-medium">Category</th>
                 <th className="px-5 py-3 font-medium">Price</th>
                 <th className="px-5 py-3 font-medium">Stock</th>
+                <th className="px-5 py-3 font-medium">AI Forecast</th>
                 <th className="px-5 py-3 font-medium">Status</th>
                 <th className="px-5 py-3 font-medium text-right">Actions</th>
               </tr>
@@ -86,14 +87,14 @@ export default function AdminProductsPage() {
               {isLoading ? (
                 [...Array(8)].map((_, i) => (
                   <tr key={i}>
-                    <td colSpan={6} className="px-5 py-4">
+                    <td colSpan={7} className="px-5 py-4">
                       <div className="h-5 bg-gray-100 rounded animate-pulse w-full" />
                     </td>
                   </tr>
                 ))
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-16 text-center">
+                  <td colSpan={7} className="px-5 py-16 text-center">
                     <PackageX className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                     <p className="text-text-secondary">No products found</p>
                   </td>
@@ -133,6 +134,22 @@ export default function AdminProductsPage() {
                       }`}>
                         {product.stock === 0 ? 'Out of stock' : `${product.stock} left`}
                       </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      {product.aiForecast ? (
+                        <div className="flex flex-col gap-1">
+                          <span className={`inline-flex w-fit px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded-full ${
+                            product.aiForecast.status === 'Critical' ? 'bg-red-100 text-red-700' :
+                            product.aiForecast.status === 'Warning' ? 'bg-amber-100 text-amber-700' :
+                            'bg-emerald-100 text-emerald-700'
+                          }`}>
+                            {product.aiForecast.daysRemaining} Days Left
+                          </span>
+                          <span className="text-[10px] text-text-secondary">Vel: {product.aiForecast.velocity}/d</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">Loading...</span>
+                      )}
                     </td>
                     <td className="px-5 py-4">
                       <button

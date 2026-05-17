@@ -15,20 +15,22 @@ import {
   Bell, 
   LogOut,
   Menu,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { api } from '@/lib/api';
 
 const navigation = [
-  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { name: 'Products', href: '/admin/products', icon: Package },
+  { name: 'Dashboard',  href: '/admin',           icon: LayoutDashboard },
+  { name: 'Products',   href: '/admin/products',   icon: Package },
   { name: 'Categories', href: '/admin/categories', icon: Tags },
-  { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
-  { name: 'Customers', href: '/admin/customers', icon: Users },
-  { name: 'Vouchers', href: '/admin/vouchers', icon: Ticket },
-  { name: 'Reviews', href: '/admin/reviews', icon: Star },
-  { name: 'Settings', href: '/admin/settings', icon: Settings },
+  { name: 'Orders',     href: '/admin/orders',     icon: ShoppingCart },
+  { name: 'Customers',  href: '/admin/customers',  icon: Users },
+  { name: 'Vouchers',   href: '/admin/vouchers',   icon: Ticket },
+  { name: 'Reviews',    href: '/admin/reviews',    icon: Star },
+  { name: 'Blog',       href: '/admin/blog',       icon: FileText },
+  { name: 'Settings',   href: '/admin/settings',   icon: Settings },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

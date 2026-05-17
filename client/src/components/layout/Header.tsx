@@ -42,6 +42,7 @@ export default function Header() {
             <Link href="/products?category=new" className="hover:text-primary transition-colors">New Arrivals</Link>
             <Link href="/products" className="hover:text-primary transition-colors">Shop All</Link>
             <Link href="/products?category=sale" className="hover:text-primary transition-colors text-semantic-error">Sale</Link>
+            <Link href="/blog" className="hover:text-primary transition-colors font-medium">Blog</Link>
           </nav>
 
           {/* Icons */}
@@ -84,6 +85,7 @@ export default function Header() {
         <div className="md:hidden bg-surface text-text-primary absolute w-full border-b border-border shadow-lg">
           <div className="px-4 pt-2 pb-6 space-y-4">
             <Link href="/products" className="block px-3 py-2 text-base font-medium hover:bg-border rounded-md" onClick={() => setMobileMenuOpen(false)}>Shop</Link>
+            <Link href="/blog" className="block px-3 py-2 text-base font-medium hover:bg-border rounded-md" onClick={() => setMobileMenuOpen(false)}>Blog</Link>
             <Link href="/search" className="block px-3 py-2 text-base font-medium hover:bg-border rounded-md" onClick={() => setMobileMenuOpen(false)}>Search</Link>
             <Link href={user ? "/account" : "/login"} className="block px-3 py-2 text-base font-medium hover:bg-border rounded-md" onClick={() => setMobileMenuOpen(false)}>
               {user ? 'My Account' : 'Sign In'}

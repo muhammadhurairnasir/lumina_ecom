@@ -100,10 +100,10 @@ const CATEGORIES = [
   { name: 'Sale',         slug: 'sale',          description: 'Special deals and discounted items',   sortOrder: 6 },
 ];
 
-// Verified Unsplash photo IDs (stable CDN URLs for Next.js image loader)
+// Verified Picsum photos (stable CDN URLs for Next.js image loader)
 const IMG = (id, alt = 'Product image') => ({
-  url: `https://images.unsplash.com/photo-${id}?w=600&q=80&auto=format`,
-  publicId: `unsplash_${id}`,
+  url: `https://picsum.photos/seed/${id}/600/600`,
+  publicId: `picsum_${id}`,
   alt,
 });
 

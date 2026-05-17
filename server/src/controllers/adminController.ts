@@ -191,7 +191,29 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
       Product.countDocuments(query),
     ]);
 
-    return ApiResponse.success(res, { products, total, page, pages: Math.ceil(total / limit) });
+    // Inject AI Forecast into every product
+    const productsWithForecast = await Promise.all(products.map(async (p: any) => {
+      const recentOrders = await Order.aggregate([
+        { $match: { createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } } },
+        { $unwind: '$items' },
+        { $match: { 'items.product': p._id } },
+        { $group: { _id: null, sold: { $sum: '$items.quantity' } } }
+      ]);
+      const sold = recentOrders[0]?.sold || 0;
+      const velocity = Math.max(0.1, sold / 30);
+      const daysRemaining = Math.floor((p.stock || 0) / velocity);
+      
+      return {
+        ...p,
+        aiForecast: {
+          velocity: parseFloat(velocity.toFixed(2)),
+          daysRemaining,
+          status: daysRemaining < 7 ? 'Critical' : daysRemaining < 14 ? 'Warning' : 'Healthy'
+        }
+      };
+    }));
+
+    return ApiResponse.success(res, { products: productsWithForecast, total, page, pages: Math.ceil(total / limit) });
   } catch (error) {
     next(error);
   }

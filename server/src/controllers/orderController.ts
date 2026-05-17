@@ -59,14 +59,15 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
     if (cart.appliedVoucher) {
       await cart.populate('appliedVoucher');
       const voucher: any = cart.appliedVoucher;
-      const validation = await voucher.isValid(req.user?.id, subtotal);
+      const validation = voucher.isValid(req.user?.id, subtotal);
       if (validation.valid) {
-        if (voucher.discountType === 'percentage') {
-          discount = subtotal * (voucher.discountValue / 100);
+        if (voucher.type === 'percentage') {
+          discount = subtotal * (voucher.value / 100);
           if (voucher.maxDiscount) discount = Math.min(discount, voucher.maxDiscount);
-        } else if (voucher.discountType === 'fixed') {
-          discount = voucher.discountValue;
+        } else if (voucher.type === 'fixed') {
+          discount = voucher.value;
         }
+        // free_shipping: no monetary discount, just zeroes shipping later
       }
     }
 

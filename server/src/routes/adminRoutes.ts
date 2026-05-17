@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { protect, restrictTo } from '../middlewares/auth';
 import * as admin from '../controllers/adminController';
+import * as blog from '../controllers/blogController';
 
 const router = Router();
 
@@ -36,5 +37,12 @@ router.get('/vouchers', admin.getVouchers);
 router.post('/vouchers', admin.createVoucher);
 router.put('/vouchers/:id', admin.updateVoucher);
 router.delete('/vouchers/:id', admin.deleteVoucher);
+
+// Blog
+router.get('/blog', blog.adminGetPosts);
+router.get('/blog/:id', blog.adminGetPost);
+router.post('/blog', blog.adminCreatePost);
+router.put('/blog/:id', blog.adminUpdatePost);
+router.delete('/blog/:id', blog.adminDeletePost);
 
 export default router;

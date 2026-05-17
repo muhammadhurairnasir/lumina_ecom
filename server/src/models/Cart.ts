@@ -47,12 +47,34 @@ const cartSchema = new Schema<ICart>(
   }
 );
 
-cartSchema.pre<ICart>('save', function (next) {
+cartSchema.pre<ICart>('save', async function (next) {
   // Recalculate subtotal
   this.subtotal = this.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  // Recalculate total (discount calculation should happen elsewhere when a voucher is applied, 
-  // but we ensure total = subtotal - discount here)
+  // Calculate discount if voucher is applied
+  if (this.appliedVoucher) {
+    const Voucher = mongoose.model('Voucher');
+    const voucher = await Voucher.findById(this.appliedVoucher);
+    if (voucher && voucher.isActive) {
+      if (voucher.type === 'fixed') {
+        this.discount = voucher.value;
+      } else if (voucher.type === 'percentage') {
+        this.discount = (this.subtotal * voucher.value) / 100;
+        if (voucher.maxDiscount && this.discount > voucher.maxDiscount) {
+          this.discount = voucher.maxDiscount;
+        }
+      } else {
+        this.discount = 0; // free_shipping discount is usually handled differently, but kept 0 here
+      }
+    } else {
+      this.discount = 0;
+      this.appliedVoucher = undefined;
+    }
+  } else {
+    this.discount = 0;
+  }
+
+  // Recalculate total
   this.total = Math.max(this.subtotal - this.discount, 0);
 
   next();

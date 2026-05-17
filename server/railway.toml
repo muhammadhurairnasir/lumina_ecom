@@ -3,7 +3,7 @@ builder = "NIXPACKS"
 buildCommand = "npm install --include=dev && npm run build --workspace=@ecommerce/server"
 
 [deploy]
-startCommand = "node server/dist/server.js"
+startCommand = "node dist/server.js"
 healthcheckPath = "/api/v1/health"
 healthcheckTimeout = 60
 restartPolicyType = "ON_FAILURE"

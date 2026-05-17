@@ -1,0 +1,155 @@
+### eCommerce Backend API Tests
+### Requires VS Code "REST Client" extension to run these directly.
+@baseUrl = http://localhost:5000/api/v1
+@contentType = application/json
+
+### 1. HEALTH CHECK
+GET http://localhost:5000/
+
+### ----------------------------------------------------
+### 2. AUTHENTICATION
+### ----------------------------------------------------
+
+# Register User
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "test@example.com",
+  "password": "Password123!"
+}
+
+###
+# Login User
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "test@example.com",
+  "password": "Password123!"
+}
+
+### Store the access token for authenticated requests
+@authToken = {{login.response.body.data.accessToken}}
+
+### ----------------------------------------------------
+### 3. PRODUCTS (PUBLIC)
+### ----------------------------------------------------
+
+# Get All Products
+GET {{baseUrl}}/products
+
+###
+# Get Featured Products
+GET {{baseUrl}}/products/featured
+
+### ----------------------------------------------------
+### 4. CATEGORIES (ADMIN)
+### MUST BE ADMIN! Open MongoDB Compass, go to ecommerce > users, 
+### and change your user's role from "user" to "admin" before running this.
+### ----------------------------------------------------
+
+# Create Category
+POST {{baseUrl}}/categories/admin
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Electronics",
+  "description": "Tech gadgets and devices"
+}
+
+### ----------------------------------------------------
+### 5. PRODUCTS (ADMIN)
+### ----------------------------------------------------
+
+# Create Product (This will trigger the AI SEO generation asynchronously!)
+POST {{baseUrl}}/products/admin
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Wireless Noise Cancelling Headphones",
+  "description": "Premium over-ear headphones with active noise cancellation and 30-hour battery life.",
+  "price": 299.99,
+  "category": "65b9e0f0a1b2c3d4e5f6g7h8", // Replace with an actual category ID
+  "tags": ["audio", "wireless", "headphones"],
+  "stock": 50,
+  "brand": "TechCorp"
+}
+
+### ----------------------------------------------------
+### 6. CART (GUEST OR LOGGED IN)
+### ----------------------------------------------------
+
+# Get Cart (creates an empty guest cart if not authenticated and no cookie exists)
+GET {{baseUrl}}/cart
+# Authorization: Bearer {{authToken}} // Uncomment to test user cart
+
+###
+# Add to Cart
+POST {{baseUrl}}/cart/items
+Content-Type: {{contentType}}
+
+{
+  "productId": "65b9e0f0a1b2c3d4e5f6g7h9", // Replace with an actual product ID
+  "quantity": 1
+}
+
+### ----------------------------------------------------
+### 7. ORDERS
+### ----------------------------------------------------
+
+# Get Stripe Config (Publishable Key)
+GET {{baseUrl}}/orders/stripe/config
+
+###
+# Checkout Cart
+POST {{baseUrl}}/orders/checkout
+Content-Type: {{contentType}}
+
+{
+  "shippingAddress": {
+    "street": "123 Main St",
+    "city": "New York",
+    "state": "NY",
+    "zip": "10001",
+    "country": "USA"
+  }
+}
+
+###
+# Confirm Order (Alternative to Webhook)
+# Uses mockPayment for testing so we don't need a real credit card right now!
+POST {{baseUrl}}/orders/confirm
+Content-Type: {{contentType}}
+
+{
+  "orderId": "your_order_id_from_checkout_response",
+  "mockPayment": true
+}
+
+### ----------------------------------------------------
+### 8. AI CHATBOT
+### ----------------------------------------------------
+
+# Talk to the Chatbot
+POST {{baseUrl}}/chatbot/message
+Content-Type: {{contentType}}
+
+{
+  "message": "Do you have any wireless headphones?"
+}
+
+###
+# Ask about an order
+POST {{baseUrl}}/chatbot/message
+Content-Type: {{contentType}}
+
+{
+  "message": "Can you check the status of my order ORD-2024-000001?"
+}

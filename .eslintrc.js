@@ -1,0 +1,15 @@
+module.exports = {
+  root: true,
+  env: {
+    node: true,
+    es2022: true,
+  },
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+  },
+  ignorePatterns: ['dist', '.next', 'node_modules'],
+  rules: {
+    // shared rules can go here
+  },
+};

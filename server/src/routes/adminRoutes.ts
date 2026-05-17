@@ -5,6 +5,20 @@ import * as blog from '../controllers/blogController';
 
 const router = Router();
 
+// Temporary seed route (no auth required)
+router.post('/seed-blog', async (req, res) => {
+  try {
+    const { execSync } = require('child_process')
+    execSync('node seedBlog.js', { cwd: process.cwd().includes('src') 
+      ? require('path').join(process.cwd(), '..') 
+      : process.cwd() 
+    })
+    res.json({ success: true, message: 'Blog seeded successfully' })
+  } catch (error: any) {
+    res.json({ success: false, error: error.message })
+  }
+})
+
 // All admin routes require authentication + admin role
 router.use(protect, restrictTo('admin'));
 

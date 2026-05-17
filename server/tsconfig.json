@@ -3,7 +3,11 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "types": ["node", "express"]
+    "types": ["node", "express"],
+    "paths": {
+      "@ecommerce/shared": ["../shared/src/index.ts"],
+      "@ecommerce/shared/*": ["../shared/src/*"]
+    }
   },
   "include": ["src/**/*"],
   "references": [

@@ -15,6 +15,7 @@ import orderRoutes, { webhookRouter } from './routes/orderRoutes';
 import chatbotRoutes from './routes/chatbotRoutes';
 import adminRoutes from './routes/adminRoutes';
 import blogRoutes from './routes/blogRoutes';
+import healthRouter from './routes/healthRoutes';
 import { errorHandler } from './middlewares/errorHandler';
 
 // Initialize express app
@@ -56,6 +57,7 @@ app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/chatbot', chatbotRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/blog', blogRoutes);
+app.use('/api/v1/health', healthRouter);
 
 // Nested routes
 app.use('/api/v1/products/:productId/reviews', reviewRoutes);

@@ -6,12 +6,30 @@ import Footer from "@/components/layout/Footer";
 import ChatbotWidget from "@/components/chatbot/ChatbotWidget";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  ),
   title: {
-    template: '%s | Lumina Store',
     default: 'Lumina Store | Premium Essentials',
+    template: '%s | Lumina',
   },
-  description: "Premium quality essentials designed for everyday living.",
+  description:
+    'Shop premium quality essentials at Lumina — fashion, electronics, home décor and more. Free shipping on orders over $100.',
+  openGraph: {
+    type: 'website',
+    siteName: 'Lumina Store',
+    title: 'Lumina Store | Premium Essentials',
+    description:
+      'Shop premium quality essentials at Lumina — fashion, electronics, home décor and more.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Lumina Store',
+    description: 'Premium quality essentials designed for everyday living.',
+  },
+  robots: { index: true, follow: true },
 };
+
 
 export default function RootLayout({
   children,

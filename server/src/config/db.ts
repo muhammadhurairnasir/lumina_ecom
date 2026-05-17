@@ -1,53 +1,27 @@
 import mongoose from 'mongoose';
 import logger from '../utils/logger';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 
-const connectDB = async () => {
-  const connectWithRetry = async () => {
-    try {
-      const conn = await mongoose.connect(process.env.MONGO_URI as string, { serverSelectionTimeoutMS: 2000 });
-      logger.info(`MongoDB Connected: ${conn.connection.host}`);
-    } catch (error: any) {
-      logger.error(`MongoDB connection to ${process.env.MONGO_URI} failed: ${error.message}`);
-      logger.info('Attempting to start fallback in-memory MongoDB server...');
-      
-      try {
-        const mongoServer = await MongoMemoryServer.create({
-          binary: {
-            version: '7.0.14',
-            downloadDir: './mongo-bin'
-          }
-        });
-        const mongoUri = mongoServer.getUri();
-        await mongoose.connect(mongoUri);
-        logger.info(`Fallback InMemory MongoDB Connected: ${mongoUri}`);
-      } catch (fallbackError: any) {
-        logger.error(`Fatal: Fallback MongoDB also failed: ${fallbackError.message}`);
-        process.exit(1);
-      }
+const connectDB = async (retries = 5): Promise<void> => {
+  try {
+    const uri = process.env.MONGO_URI;
+    if (!uri) throw new Error('MONGO_URI environment variable is not set');
+    await mongoose.connect(uri);
+    logger.info('MongoDB connected successfully');
+  } catch (error: any) {
+    if (retries > 0) {
+      logger.warn(`MongoDB connection failed. Retrying... (${retries} attempts left): ${error.message}`);
+      await new Promise((res) => setTimeout(res, 3000));
+      return connectDB(retries - 1);
     }
-  };
-
-  await connectWithRetry();
-
-  mongoose.connection.on('disconnected', () => {
-    logger.warn('MongoDB disconnected');
-  });
-
-  mongoose.connection.on('reconnected', () => {
-    logger.info('MongoDB reconnected');
-  });
+    logger.error('MongoDB connection failed after all retries:', error);
+    process.exit(1);
+  }
 };
 
-// Graceful shutdown
-const gracefulShutdown = async (signal: string) => {
-  logger.info(`Received ${signal}. Closing MongoDB connection...`);
-  await mongoose.connection.close();
-  logger.info('MongoDB connection closed. Exiting process.');
-  process.exit(0);
-};
+mongoose.connection.on('disconnected', () => logger.warn('MongoDB disconnected'));
+mongoose.connection.on('reconnected', () => logger.info('MongoDB reconnected'));
 
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT',  () => mongoose.connection.close().then(() => { logger.info('MongoDB closed on SIGINT');  process.exit(0); }));
+process.on('SIGTERM', () => mongoose.connection.close().then(() => { logger.info('MongoDB closed on SIGTERM'); process.exit(0); }));
 
 export default connectDB;

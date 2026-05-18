@@ -24,7 +24,7 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const headerClass = `fixed w-full top-0 z-50 transition-colors duration-300 ${
+  const headerClass = `fixed w-full top-0 z-50 transition-all duration-300 ${
     isScrolled || !isHomePage ? 'bg-surface shadow-sm text-text-primary' : 'bg-transparent text-gray-900'
   }`;
 
@@ -39,21 +39,21 @@ export default function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex space-x-8">
-            <Link href="/products?category=new" className="hover:text-primary transition-colors">New Arrivals</Link>
-            <Link href="/products" className="hover:text-primary transition-colors">Shop All</Link>
-            <Link href="/products?category=sale" className="hover:text-primary transition-colors text-semantic-error">Sale</Link>
-            <Link href="/blog" className="hover:text-primary transition-colors font-medium">Blog</Link>
+            <Link href="/products?category=new" className="hover:text-primary transition-colors duration-200">New Arrivals</Link>
+            <Link href="/products" className="hover:text-primary transition-colors duration-200">Shop All</Link>
+            <Link href="/products?category=sale" className="hover:text-primary transition-colors duration-200 text-semantic-error">Sale</Link>
+            <Link href="/blog" className="hover:text-primary transition-colors duration-200 font-medium">Blog</Link>
           </nav>
 
           {/* Icons */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link href="/search" aria-label="Search" className="hover:text-primary transition-colors">
+            <Link href="/search" aria-label="Search" className="hover:text-primary transition-colors duration-200">
               <Search className="w-5 h-5" />
             </Link>
-            <Link href={user ? "/account" : "/login"} aria-label="Account" className="hover:text-primary transition-colors">
+            <Link href={user ? "/account" : "/login"} aria-label="Account" className="hover:text-primary transition-colors duration-200">
               <User className="w-5 h-5" />
             </Link>
-            <Link href="/cart" aria-label="Cart" className="relative hover:text-primary transition-colors">
+            <Link href="/cart" aria-label="Cart" className="relative hover:text-primary transition-colors duration-200">
               <ShoppingBag className="w-5 h-5" />
               {cartItemsCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">

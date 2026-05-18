@@ -45,7 +45,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
           <div className="z-10 max-w-xl">
             <span className="text-primary font-semibold tracking-wider uppercase text-sm mb-4 block">Summer Collection 2026</span>
-            <h1 className="text-5xl md:text-6xl font-bold text-text-primary mb-6 leading-tight animate-fade-slide-up">
+            <h1 className="text-5xl md:text-6xl font-bold text-text-primary mb-6 leading-tight">
               Essentials for <br /> Everyday Living
             </h1>
             <p className="text-lg text-text-secondary mb-8 animate-fade-slide-up-delay">
@@ -62,10 +62,10 @@ export default function Home() {
           </div>
         </div>
         {/* Abstract/Placeholder Hero Image */}
-        <div className="absolute right-0 top-0 w-1/2 h-full hidden md:block animate-fade-slide-up">
+        <div className="absolute right-0 top-0 w-1/2 h-full hidden md:block">
            <div className="w-full h-full bg-gradient-to-l from-white to-transparent opacity-20 absolute z-10"></div>
            <Image
-             src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1920&auto=format&fit=crop"
+             src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=70&w=1000&auto=format&fit=crop"
              alt="Summer Collection Hero"
              fill
              priority

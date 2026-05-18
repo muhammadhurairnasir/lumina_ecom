@@ -98,7 +98,7 @@ export default function Home() {
       </section>
 
       {/* 3. Featured Categories (Mocked for UI aesthetics as per requirements) */}
-      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full animate-fade-in">
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full md:animate-fade-in">
         <h2 className="text-3xl font-bold text-text-primary mb-8 text-center">Shop by Category</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
@@ -117,6 +117,7 @@ export default function Home() {
                 src={cat.img}
                 alt={cat.name}
                 fill
+                loading="lazy"
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
                 sizes="(max-width: 768px) 50vw, 25vw"
               />
@@ -127,7 +128,7 @@ export default function Home() {
       </section>
 
       {/* 4. Best Sellers (Featured Products) */}
-      <section className="py-16 bg-[#FAFAF9] animate-fade-in">
+      <section className="py-16 bg-[#FAFAF9] md:animate-fade-in">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-end mb-8">
             <div>
@@ -163,7 +164,7 @@ export default function Home() {
       </section>
 
       {/* 6. New Arrivals (Swiper Horizontal Scroll) */}
-      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-hidden animate-fade-in">
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-hidden md:animate-fade-in">
         <div className="flex justify-between items-end mb-8">
           <h2 className="text-3xl font-bold text-text-primary">New Arrivals</h2>
         </div>

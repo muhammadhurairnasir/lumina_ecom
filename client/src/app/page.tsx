@@ -64,7 +64,14 @@ export default function Home() {
         {/* Abstract/Placeholder Hero Image */}
         <div className="absolute right-0 top-0 w-1/2 h-full hidden md:block animate-fade-slide-up">
            <div className="w-full h-full bg-gradient-to-l from-white to-transparent opacity-20 absolute z-10"></div>
-           <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1920&auto=format&fit=crop')] bg-cover bg-center"></div>
+           <Image
+             src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1920&auto=format&fit=crop"
+             alt="Summer Collection Hero"
+             fill
+             priority
+             className="object-cover object-center"
+             sizes="50vw"
+           />
         </div>
       </section>
 

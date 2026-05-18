@@ -38,11 +38,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <head>
-        <link rel="preconnect" href="https://luminastore.up.railway.app" />
-        <link rel="preconnect" href="https://images.unsplash.com" />
-        <link rel="dns-prefetch" href="https://luminastore.up.railway.app" />
-      </head>
       <body className="flex flex-col min-h-screen bg-background text-text-primary">
         <Providers>
           <Header />

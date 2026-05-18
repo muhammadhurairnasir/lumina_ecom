@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,6 +15,11 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { ShieldCheck, Truck, RotateCcw, Star } from 'lucide-react';
 
 export default function Home() {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const { data: categories, isLoading: catsLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
@@ -64,13 +70,7 @@ export default function Home() {
         {/* Abstract/Placeholder Hero Image */}
         <div className="absolute right-0 top-0 w-1/2 h-full hidden md:block">
            <div className="w-full h-full bg-gradient-to-l from-white to-transparent opacity-20 absolute z-10"></div>
-           <Image
-             src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=70&w=1000&auto=format&fit=crop"
-             alt="Summer Collection Hero"
-             fill
-             className="object-cover object-center"
-             sizes="50vw"
-           />
+           <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=70&w=1000&auto=format&fit=crop')] bg-cover bg-center"></div>
         </div>
       </section>
 
@@ -102,10 +102,10 @@ export default function Home() {
         <h2 className="text-3xl font-bold text-text-primary mb-8 text-center">Shop by Category</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { name: 'Electronics', img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=600&auto=format&fit=crop' },
-            { name: 'Fashion', img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600&auto=format&fit=crop' },
-            { name: 'Home & Living', img: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=600&auto=format&fit=crop' },
-            { name: 'Accessories', img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop' }
+            { name: 'Electronics', img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?q=60&w=400&auto=format&fit=crop' },
+            { name: 'Fashion', img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=60&w=400&auto=format&fit=crop' },
+            { name: 'Home & Living', img: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=60&w=400&auto=format&fit=crop' },
+            { name: 'Accessories', img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=60&w=400&auto=format&fit=crop' }
           ].map((cat, i) => (
             <Link 
               href={`/products?category=${cat.name.toLowerCase()}`} 
@@ -169,7 +169,7 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-text-primary">New Arrivals</h2>
         </div>
         
-        {newLoading ? (
+        {newLoading || !isMounted ? (
           <div className="flex space-x-6 overflow-hidden">
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-80 w-64 flex-shrink-0" />)}
           </div>

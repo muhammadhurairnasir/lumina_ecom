@@ -52,7 +52,9 @@ export default function Home() {
           <div className="z-10 max-w-xl">
             <span className="text-primary font-semibold tracking-wider uppercase text-sm mb-4 block">Summer Collection 2026</span>
             <h1 className="text-5xl md:text-6xl font-bold text-text-primary mb-6 leading-tight">
-              Essentials for <br /> Everyday Living
+              Essentials for <br />
+              <span className="block md:hidden">Everyday Living</span>
+              <span className="hidden md:desktop-typing">Everyday Living</span>
             </h1>
             <p className="text-lg text-text-secondary mb-8 md:animate-fade-slide-up-delay">
               Discover our new range of premium quality products designed to elevate your daily routine. Uncompromising quality meets timeless design.

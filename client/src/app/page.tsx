@@ -48,10 +48,10 @@ export default function Home() {
             <h1 className="text-5xl md:text-6xl font-bold text-text-primary mb-6 leading-tight">
               Essentials for <br /> Everyday Living
             </h1>
-            <p className="text-lg text-text-secondary mb-8 animate-fade-slide-up-delay">
+            <p className="text-lg text-text-secondary mb-8 md:animate-fade-slide-up-delay">
               Discover our new range of premium quality products designed to elevate your daily routine. Uncompromising quality meets timeless design.
             </p>
-            <div className="flex space-x-4 animate-fade-slide-up-delay-2">
+            <div className="flex space-x-4 md:animate-fade-slide-up-delay-2">
               <Link href="/products" className="px-8 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-light hover:text-primary transition-all duration-200 hover:shadow-md active:scale-95">
                 Shop Now
               </Link>
@@ -68,7 +68,6 @@ export default function Home() {
              src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=70&w=1000&auto=format&fit=crop"
              alt="Summer Collection Hero"
              fill
-             priority
              className="object-cover object-center"
              sizes="50vw"
            />

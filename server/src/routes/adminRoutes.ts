@@ -18,6 +18,19 @@ router.all('/seed-blog', async (req, res) => {
   }
 })
 
+// Temporary route to trigger product image updates via the script
+router.all('/update-images', async (req, res) => {
+  try {
+    const path = require('path')
+    const { execSync } = require('child_process')
+    const updateScript = path.join(__dirname, '../../updateProductImages.js')
+    execSync(`node "${updateScript}"`)
+    res.json({ success: true, message: 'Product images updated successfully' })
+  } catch (error: any) {
+    res.json({ success: false, error: error.message })
+  }
+})
+
 // All admin routes require authentication + admin role
 router.use(protect, restrictTo('admin'));
 

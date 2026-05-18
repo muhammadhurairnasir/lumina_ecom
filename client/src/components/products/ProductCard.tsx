@@ -48,7 +48,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const isNew = product.tags?.includes('new');
 
   return (
-    <Link href={`/products/${product.slug}`} className="group relative block rounded-2xl bg-white border border-border shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
+    <Link href={`/products/${product.slug}`} className="group relative block rounded-2xl bg-white border border-border shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden">
       
       {/* Badges */}
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-1">
@@ -112,9 +112,9 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={handleAddToCart}
             disabled={!product.isInStock}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
               product.isInStock 
-                ? 'bg-primary text-white hover:bg-primary-light hover:text-primary' 
+                ? 'bg-primary text-white hover:bg-primary-light hover:text-primary hover:scale-105 active:scale-95' 
                 : 'bg-border text-text-secondary cursor-not-allowed'
             }`}
           >

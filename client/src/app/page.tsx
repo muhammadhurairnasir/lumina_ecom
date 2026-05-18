@@ -45,24 +45,24 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
           <div className="z-10 max-w-xl">
             <span className="text-primary font-semibold tracking-wider uppercase text-sm mb-4 block">Summer Collection 2026</span>
-            <h1 className="text-5xl md:text-6xl font-bold text-text-primary mb-6 leading-tight">
+            <h1 className="text-5xl md:text-6xl font-bold text-text-primary mb-6 leading-tight animate-fade-slide-up">
               Essentials for <br /> Everyday Living
             </h1>
-            <p className="text-lg text-text-secondary mb-8">
+            <p className="text-lg text-text-secondary mb-8 animate-fade-slide-up-delay">
               Discover our new range of premium quality products designed to elevate your daily routine. Uncompromising quality meets timeless design.
             </p>
-            <div className="flex space-x-4">
-              <Link href="/products" className="px-8 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-light hover:text-primary transition-colors">
+            <div className="flex space-x-4 animate-fade-slide-up-delay-2">
+              <Link href="/products" className="px-8 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-light hover:text-primary transition-all duration-200 hover:shadow-md active:scale-95">
                 Shop Now
               </Link>
-              <Link href="/products?category=new" className="px-8 py-3 bg-white text-text-primary border border-border font-medium rounded-lg hover:bg-gray-50 transition-colors">
+              <Link href="/products?category=new" className="px-8 py-3 bg-white text-text-primary border border-border font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 hover:shadow-md active:scale-95">
                 Explore New
               </Link>
             </div>
           </div>
         </div>
         {/* Abstract/Placeholder Hero Image */}
-        <div className="absolute right-0 top-0 w-1/2 h-full hidden md:block">
+        <div className="absolute right-0 top-0 w-1/2 h-full hidden md:block animate-fade-slide-up">
            <div className="w-full h-full bg-gradient-to-l from-white to-transparent opacity-20 absolute z-10"></div>
            <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1920&auto=format&fit=crop')] bg-cover bg-center"></div>
         </div>
@@ -72,17 +72,17 @@ export default function Home() {
       <section className="py-12 bg-white border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center transition-all duration-300 hover:scale-105 hover:shadow-sm p-4 rounded-xl">
               <Truck className="w-8 h-8 text-primary mb-3" />
               <h3 className="font-semibold text-text-primary">Free Global Shipping</h3>
               <p className="text-sm text-text-secondary mt-1">On all orders over $100</p>
             </div>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center transition-all duration-300 hover:scale-105 hover:shadow-sm p-4 rounded-xl">
               <RotateCcw className="w-8 h-8 text-primary mb-3" />
               <h3 className="font-semibold text-text-primary">30-Day Easy Returns</h3>
               <p className="text-sm text-text-secondary mt-1">No questions asked return policy</p>
             </div>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center transition-all duration-300 hover:scale-105 hover:shadow-sm p-4 rounded-xl">
               <ShieldCheck className="w-8 h-8 text-primary mb-3" />
               <h3 className="font-semibold text-text-primary">Secure Payments</h3>
               <p className="text-sm text-text-secondary mt-1">100% secure checkout via Stripe</p>
@@ -92,20 +92,36 @@ export default function Home() {
       </section>
 
       {/* 3. Featured Categories (Mocked for UI aesthetics as per requirements) */}
-      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full animate-fade-in">
         <h2 className="text-3xl font-bold text-text-primary mb-8 text-center">Shop by Category</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {['Electronics', 'Fashion', 'Home & Living', 'Accessories'].map((cat, i) => (
-            <Link href={`/products?category=${cat.toLowerCase()}`} key={i} className="group relative h-64 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors z-10"></div>
-              <h3 className="relative z-20 text-white font-bold text-xl tracking-wide">{cat}</h3>
+          {[
+            { name: 'Electronics', img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=600&auto=format&fit=crop' },
+            { name: 'Fashion', img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600&auto=format&fit=crop' },
+            { name: 'Home & Living', img: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=600&auto=format&fit=crop' },
+            { name: 'Accessories', img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop' }
+          ].map((cat, i) => (
+            <Link 
+              href={`/products?category=${cat.name.toLowerCase()}`} 
+              key={i} 
+              className="group relative h-64 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center transition-transform duration-300 ease-in-out hover:scale-105"
+            >
+              <div className="absolute inset-0 bg-black/25 group-hover:bg-black/45 transition-colors duration-300 z-10"></div>
+              <Image
+                src={cat.img}
+                alt={cat.name}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                sizes="(max-width: 768px) 50vw, 25vw"
+              />
+              <h3 className="relative z-20 text-white font-bold text-xl tracking-wide">{cat.name}</h3>
             </Link>
           ))}
         </div>
       </section>
 
       {/* 4. Best Sellers (Featured Products) */}
-      <section className="py-16 bg-[#FAFAF9]">
+      <section className="py-16 bg-[#FAFAF9] animate-fade-in">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-end mb-8">
             <div>
@@ -141,7 +157,7 @@ export default function Home() {
       </section>
 
       {/* 6. New Arrivals (Swiper Horizontal Scroll) */}
-      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-hidden">
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-hidden animate-fade-in">
         <div className="flex justify-between items-end mb-8">
           <h2 className="text-3xl font-bold text-text-primary">New Arrivals</h2>
         </div>

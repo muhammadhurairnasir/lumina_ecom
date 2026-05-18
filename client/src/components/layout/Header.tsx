@@ -25,7 +25,7 @@ export default function Header() {
   }, []);
 
   const headerClass = `fixed w-full top-0 z-50 transition-colors duration-300 ${
-    isScrolled || !isHomePage ? 'bg-surface shadow-sm text-text-primary' : 'bg-transparent text-white'
+    isScrolled || !isHomePage ? 'bg-surface shadow-sm text-text-primary' : 'bg-transparent text-gray-900'
   }`;
 
   return (

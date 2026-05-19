@@ -9,7 +9,10 @@ const router = Router();
 const chatbotLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
   max: 20,
-  message: 'Too many requests to the chatbot, please try again after a minute',
+  message: {
+    success: false,
+    message: 'Too many messages. Please slow down! 😊'
+  },
   standardHeaders: true,
   legacyHeaders: false,
 });

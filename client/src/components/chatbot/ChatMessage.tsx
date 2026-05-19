@@ -89,7 +89,7 @@ export default function ChatMessage({ message }: { message: Message }) {
         <div className="mt-2 ml-2 space-y-2 max-w-[85%]">
           {message.actions.map((action, i) => {
             const actionType = action.type || action.action;
-            if (action.action === 'navigate' && action.slug) {
+            if ((action.action === 'navigate' || action.type === 'navigate') && action.slug) {
               return <ChatProductCard key={i} slug={action.slug} />;
             }
             if ((action.action === 'applyVoucher' || action.type === 'APPLY_VOUCHER') && (action.code || action.voucher?.code)) {

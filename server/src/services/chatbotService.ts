@@ -2,7 +2,6 @@ import Product from '../models/Product';
 import Order from '../models/Order';
 import Voucher from '../models/Voucher';
 import Category from '../models/Category';
-import redisClient from '../config/redis';
 import mongoose from 'mongoose';
 
 // ─── 1. SYNONYMS & DICTIONARIES ─────────────────────────────────────────────
@@ -166,23 +165,42 @@ const getLiveVouchers = async () => {
   } catch { return []; }
 };
 
-// ─── 3. CHAT SESSION MEMORY (Redis) ─────────────────────────────────────────
+// ─── 3. CHAT SESSION MEMORY (In-Memory) ───────────────────────────────────
 
-const MEMORY_TTL = 7200;
+// In-memory session store (replaces Redis)
+const sessionStore = new Map<string, {
+  history: Array<{role: string, content: string}>,
+  expiresAt: number
+}>();
 
 export const getChatHistory = async (sessionId: string): Promise<any[]> => {
-  const data = await redisClient.get(`chat:${sessionId}`);
-  if (!data) return [];
-  try { return JSON.parse(data); } catch { return []; }
+  const session = sessionStore.get(sessionId);
+  if (!session) return [];
+  if (Date.now() > session.expiresAt) {
+    sessionStore.delete(sessionId);
+    return [];
+  }
+  return session.history;
 };
 
 export const saveChatHistory = async (sessionId: string, messages: any[]) => {
-  await redisClient.setex(`chat:${sessionId}`, MEMORY_TTL, JSON.stringify(messages.slice(-20)));
+  sessionStore.set(sessionId, {
+    history: messages.slice(-20),
+    expiresAt: Date.now() + 2 * 60 * 60 * 1000 // 2 hours
+  });
 };
 
 export const clearChatHistory = async (sessionId: string) => {
-  await redisClient.del(`chat:${sessionId}`);
+  sessionStore.delete(sessionId);
 };
+
+// Clean expired sessions every 30 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of sessionStore.entries()) {
+    if (now > value.expiresAt) sessionStore.delete(key);
+  }
+}, 30 * 60 * 1000);
 
 // ─── 4. MAIN NLP ROUTER ──────────────────────────────────────────────────────
 
@@ -197,19 +215,27 @@ export const processChatMessage = async (
   }
 ): Promise<{ reply: string; suggestions: string[]; actions: any[] }> => {
 
+  if (!userMessage || !userMessage.trim()) {
+    return { reply: 'Please type a message first 😊', suggestions: [], actions: [] };
+  }
+  if (userMessage.length > 500) {
+    return { reply: 'Please keep messages shorter so I can help you better!', suggestions: [], actions: [] };
+  }
+
   const lowerMsg = userMessage.toLowerCase().trim();
   let reply = '';
   const suggestions: string[] = [];
   const actions: any[] = [];
 
-  // Load all active products
-  const allProducts: ProductDoc[] = await Product.find({ isActive: true })
-    .select('name slug price compareAtPrice category rating stock description images')
-    .populate('category', 'name slug')
-    .lean() as any;
+  try {
+    // Load all active products
+    const allProducts: ProductDoc[] = await Product.find({ isActive: true })
+      .select('name slug price compareAtPrice category rating stock description images')
+      .populate('category', 'name slug')
+      .lean() as any;
 
-  // ── Intent flags ──────────────────────────────────────────────────────────
-  const isOrderTrack = /\b(track|where.*(my|is)|status|history|past|orders?|previous|shipped|package|what did i (buy|purchase|get)|ready)\b/.test(lowerMsg) && !/order.*product/.test(lowerMsg);
+    // ── Intent flags ──────────────────────────────────────────────────────────
+    const isOrderTrack = /\b(track|where.*(my|is)|status|history|past|orders?|previous|shipped|package|what did i (buy|purchase|get)|ready|ord-[\w-]+|\d{6,})\b/i.test(lowerMsg) && !/order.*product/.test(lowerMsg);
   const isFAQ = /\b(shipping|delivery|deliver|arrive|eta|refund|return|policy|how.*pay|payment|pay |pay\?|hours|open|close|closing|when.*open|contact|phone|email|cash|card|stripe|accepted)\b/.test(lowerMsg);
   const isSearch = /show me|find|search|looking for|want|i need|do you have|what products/.test(lowerMsg);
   const isBudget = /under|below|less than|cheap|budget|affordable/.test(lowerMsg);
@@ -217,7 +243,7 @@ export const processChatMessage = async (
   const isClear = /clear.{0,5}cart|empty.{0,5}cart|wipe.{0,5}cart|reset.{0,5}cart/.test(lowerMsg);
   const isViewCart = /\b(view cart|show cart|my cart|what'?s in my cart)\b/.test(lowerMsg);
   const isCheckout = !isClear && !isViewCart && /\b(checkout|pay now|pay for|order now|finish order)\b/.test(lowerMsg);
-  const isCoupon = /coupon|discount|promo|code|voucher|offer|deal|cheaper|save money|redeem|apply\s([a-z0-9]+)/.test(lowerMsg);
+  const isCoupon = /coupon|discount|promo|code|voucher|offer|deal|cheaper|save money|redeem|apply\s([a-z0-9]+)/i.test(lowerMsg);
   const isTrending = /recommend|suggest|what.*good|popular|trending|best|favorite|special/.test(lowerMsg);
   const isPairing = /also bought|goes.{0,8}with|pair|recommend with|similar/.test(lowerMsg);
   const isRating = /top rated|highly rated|best rated|best reviewed|\d\s?stars?/.test(lowerMsg);
@@ -324,8 +350,26 @@ export const processChatMessage = async (
 
   // ── Order tracking ───────────────────────────────────────────────────────
   if (isOrderTrack) {
-    if (!context.userId) {
-      reply += (reply ? '\n\n' : '') + '🔐 Please **sign in** to track your orders.';
+    const orderNumMatch = userMessage.match(/\b(ORD-[\w-]+|\d{6,})\b/i);
+    if (orderNumMatch) {
+      const orderNumber = orderNumMatch[1].toUpperCase();
+      const order: any = await Order.findOne({ orderNumber }).lean();
+      if (order) {
+        reply += (reply ? '\n\n' : '') + `📦 **Order ${order.orderNumber}** — $${order.total?.toFixed(2)}\n\n${buildOrderTimeline(order)}`;
+        actions.push({
+          type: 'ORDER_TIMELINE',
+          orderId: order.orderNumber,
+          total: order.total,
+          status: order.orderStatus || order.status || 'pending',
+          steps: ['pending', 'processing', 'shipped', 'delivered'],
+        });
+        suggestions.push('Show all orders');
+      } else {
+        reply += (reply ? '\n\n' : '') + `I couldn't find an order with the number **${orderNumber}**. Please check and try again!`;
+        suggestions.push('Track my order', 'Show my orders');
+      }
+    } else if (!context.userId) {
+      reply += (reply ? '\n\n' : '') + '🔐 Please **sign in** to track your orders, or provide your exact Order Number.';
       suggestions.push('Sign In');
     } else {
       const isHistory = /\b(all|history|past|previous|orders|what did i)\b/.test(lowerMsg);
@@ -354,7 +398,7 @@ export const processChatMessage = async (
   // ── Vouchers ─────────────────────────────────────────────────────────────
   if (isCoupon) {
     const vouchers: any[] = await getLiveVouchers();
-    const codeMatch = lowerMsg.match(/apply\s+([a-z0-9]+)/i);
+    const codeMatch = userMessage.match(/\b([A-Z0-9]{4,20})\b/i);
     const explicitCode = codeMatch ? vouchers.find(v => v.code.toLowerCase() === codeMatch[1].toLowerCase()) : null;
 
     if (explicitCode && /\b(apply|use|redeem)\b/.test(lowerMsg)) {
@@ -478,22 +522,39 @@ export const processChatMessage = async (
     }
   }
 
-  // Universal Suggestion Safety Net
-  if (suggestions.length === 0) {
-    if (context.cartItems && context.cartItems.length > 0) {
-      suggestions.push('View Cart', 'Checkout', 'Clear cart');
-    } else {
-      suggestions.push('Browse products', "What's trending?", 'Track my order');
+    // Universal Suggestion Safety Net
+    if (suggestions.length === 0) {
+      if (context.cartItems && context.cartItems.length > 0) {
+        suggestions.push('View Cart', 'Checkout', 'Clear cart');
+      } else {
+        suggestions.push('Browse products', "What's trending?", 'Track my order');
+      }
     }
+
+    // Deduplicate suggestions
+    const finalSuggestions = [...new Set(suggestions)].slice(0, 6);
+
+    // Save to session memory
+    const history = await getChatHistory(sessionId);
+    history.push({ role: 'user', content: userMessage }, { role: 'assistant', content: reply });
+    await saveChatHistory(sessionId, history);
+
+    return { reply, suggestions: finalSuggestions, actions };
+
+  } catch (error) {
+    console.error('Chatbot Error:', error);
+    
+    // Fallback trending if search crashed or similar
+    let trendingActions: any[] = [];
+    try {
+      const topRated = await Product.find({ isActive: true }).sort({ rating: -1 }).limit(3).lean() as any[];
+      trendingActions = topRated.map(p => ({ type: 'navigate', action: 'navigate', slug: p.slug }));
+    } catch { /* ignore */ }
+
+    return {
+      reply: "I'm having a little trouble right now. Please try again in a moment! 😊",
+      suggestions: ["What's popular right now? 🔥", 'Track my order 📦'],
+      actions: trendingActions
+    };
   }
-
-  // Deduplicate suggestions
-  const finalSuggestions = [...new Set(suggestions)].slice(0, 6);
-
-  // Save to session memory
-  const history = await getChatHistory(sessionId);
-  history.push({ role: 'user', content: userMessage }, { role: 'assistant', content: reply });
-  await saveChatHistory(sessionId, history);
-
-  return { reply, suggestions: finalSuggestions, actions };
 };

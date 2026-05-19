@@ -1,13 +1,13 @@
 import { useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Sparkles, ShoppingBag, Gift, Package, Tag } from 'lucide-react';
+import { X, Sparkles, ShoppingBag, Gift, Package, Tag, RefreshCw } from 'lucide-react';
 import { useChatbot } from './useChatbot';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 
 export default function ChatWindow() {
   const router = useRouter();
-  const { messages, isLoading, isOpen, setIsOpen, sendMessage } = useChatbot();
+  const { messages, isLoading, isOpen, setIsOpen, sendMessage, clearChat } = useChatbot();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,13 +36,23 @@ export default function ChatWindow() {
             <p className="text-xs text-primary-light">Online & ready to help</p>
           </div>
         </div>
-        <button 
-          onClick={() => setIsOpen(false)} 
-          className="text-primary-light hover:text-white transition-colors p-1"
-          aria-label="Close chat"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        <div className="flex items-center space-x-1">
+          <button 
+            onClick={() => clearChat()} 
+            className="text-primary-light hover:text-white transition-colors p-1"
+            aria-label="Reset chat"
+            title="Reset Chat"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+          <button 
+            onClick={() => setIsOpen(false)} 
+            className="text-primary-light hover:text-white transition-colors p-1"
+            aria-label="Close chat"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Messages Area */}

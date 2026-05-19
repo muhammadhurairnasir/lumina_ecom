@@ -19,7 +19,7 @@ const setRefreshTokenCookie = (res: Response, token: string) => {
   res.cookie('refreshToken', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 };
@@ -122,7 +122,7 @@ export const adminLogin = async (req: Request, res: Response, next: NextFunction
     res.cookie('adminToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 60 * 60 * 1000, // 1 hour
     });
 
@@ -176,7 +176,7 @@ export const logout = async (req: Request, res: Response, next: NextFunction) =>
     const clearOpts = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict' as const,
+      sameSite: (process.env.NODE_ENV === 'production' ? 'none' : 'lax') as any,
       maxAge: 0,
       path: '/',
     };

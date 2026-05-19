@@ -14,7 +14,7 @@ const getSessionId = (req: Request, res: Response): string => {
     res.cookie('cartSessionId', sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
   }
@@ -82,7 +82,7 @@ export const addToCart = async (req: Request, res: Response, next: NextFunction)
     }
 
     const itemIndex = cart.items.findIndex(
-      (item) => item.product.toString() === productId && item.variant === variant
+      (item) => item.product.toString() === product._id.toString() && item.variant === variant
     );
 
     if (itemIndex > -1) {
@@ -290,7 +290,7 @@ export const mergeGuestCart = async (req: Request, res: Response, next: NextFunc
     res.clearCookie('cartSessionId', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     });
 
     return ApiResponse.success(res, { cart: userCart }, 'Carts merged successfully');

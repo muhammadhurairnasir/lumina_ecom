@@ -49,7 +49,8 @@ export default function CartPage() {
       setCart(newCart);
       queryClient.setQueryData(['cart'], newCart);
       toast.success('Item removed');
-    }
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to remove item')
   });
 
   const applyVoucher = useMutation({

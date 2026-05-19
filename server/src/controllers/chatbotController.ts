@@ -12,7 +12,7 @@ const getSessionId = (req: Request, res: Response): string => {
     res.cookie('chatbotSessionId', sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 2 * 60 * 60 * 1000, // 2 hours
     });
   }

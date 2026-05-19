@@ -250,6 +250,7 @@ export const processChatMessage = async (
   const isCheapest = /\b(cheapest|lowest price|least expensive)\b/.test(lowerMsg);
   const isExpensive = /\b(most expensive|priciest|highest price)\b/.test(lowerMsg);
   const isAdd = /\b(add|put|include|throw in|insert|give me|buy a|buy some)\b/.test(lowerMsg);
+  const isViewProduct = /\b(view|open)\b/.test(lowerMsg);
   const hasExplicitCartIntent = isAdd || isRemove;
 
   const targets = extractTargetTokens(lowerMsg, allProducts);
@@ -315,6 +316,16 @@ export const processChatMessage = async (
       } else {
         suggestions.push('View Cart', 'Checkout', 'Show more products');
       }
+    }
+  }
+
+  // ── View Product ────────────────────────────────────────────────────────
+  if (isViewProduct && targets.length > 0) {
+    const target = targets.find(t => t.type === 'specific');
+    if (target?.product) {
+      reply = `Here is the product you asked for: **${target.product.name}**`;
+      actions.push({ type: 'navigate', action: 'navigate', slug: target.product.slug });
+      suggestions.push(`Add ${target.product.name}`, 'View Cart', "What's trending?");
     }
   }
 

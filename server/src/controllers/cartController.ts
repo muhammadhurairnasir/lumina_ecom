@@ -58,10 +58,14 @@ export const getCart = async (req: Request, res: Response, next: NextFunction) =
 
 export const addToCart = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { productId, quantity, variant } = req.body;
+    const { productId, slug, quantity, variant } = req.body;
     const qty = Number(quantity) || 1;
 
-    const product = await Product.findById(productId);
+    let product = await Product.findById(productId);
+    if (!product && slug) {
+      product = await Product.findOne({ slug });
+    }
+
     if (!product || !product.isActive) {
       return next(new AppError('Product not found or inactive', 404));
     }

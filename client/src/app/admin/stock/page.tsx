@@ -4,12 +4,26 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Search, Plus, Loader2, AlertTriangle, Package, CheckCircle, TrendingUp, Sparkles, Pencil, Trash2, X } from 'lucide-react';
+import { Search, Plus, Loader2, AlertTriangle, Package, CheckCircle, TrendingUp, Sparkles, Pencil, Trash2, X, RefreshCcw } from 'lucide-react';
 
 export default function StockIntelligencePage() {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchFilter, setSearchFilter] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const refreshForecast = async () => {
+    setIsRefreshing(true);
+    try {
+      await api.get('/admin/stock/forecast?force=1');
+      await queryClient.invalidateQueries({ queryKey: ['admin-stock-forecast'] });
+      toast.success('Forecast refreshed with latest data');
+    } catch {
+      toast.error('Failed to refresh forecast');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
   
   // Seasonal Rule Modal State
   const [isRuleModalOpen, setIsRuleModalOpen] = useState(false);
@@ -128,9 +142,19 @@ export default function StockIntelligencePage() {
 
   return (
     <div className="space-y-8 pb-20">
-      <div>
-        <h1 className="text-2xl font-bold text-text-primary">Stock Intelligence</h1>
-        <p className="text-sm text-text-secondary mt-1">AI-powered seasonal demand forecasting</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary">Stock Intelligence</h1>
+          <p className="text-sm text-text-secondary mt-1">AI-powered seasonal demand forecasting</p>
+        </div>
+        <button
+          onClick={refreshForecast}
+          disabled={isRefreshing}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-lg text-sm font-medium text-text-secondary hover:bg-gray-50 transition shadow-sm disabled:opacity-60"
+        >
+          <RefreshCcw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh Forecast'}
+        </button>
       </div>
 
       {/* Section 1: Season Banner */}

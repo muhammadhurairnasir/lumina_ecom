@@ -518,7 +518,8 @@ export const deleteVoucher = async (req: Request, res: Response, next: NextFunct
 export const getStockForecast = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cacheKey = 'stock:forecast';
-    const cached = memCache.get<any>(cacheKey);
+    const force = req.query.force === '1';
+    const cached = force ? null : memCache.get<any>(cacheKey);
     if (cached) {
       return ApiResponse.success(res, cached);
     }

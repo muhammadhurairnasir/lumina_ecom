@@ -522,7 +522,7 @@ export const getStockForecast = async (req: Request, res: Response, next: NextFu
       return ApiResponse.success(res, JSON.parse(cached));
     }
     const forecast = await getForecastForAllProducts();
-    await redisClient.set(cacheKey, JSON.stringify(forecast), 'EX', 600); // 10 minutes cache
+    await redisClient.setex(cacheKey, 600, JSON.stringify(forecast)); // 10 minutes cache
     return ApiResponse.success(res, forecast);
   } catch (error) {
     next(error);
@@ -547,7 +547,7 @@ export const getStockAlerts = async (req: Request, res: Response, next: NextFunc
       forecast = JSON.parse(cached);
     } else {
       forecast = await getForecastForAllProducts();
-      await redisClient.set(cacheKey, JSON.stringify(forecast), 'EX', 600);
+      await redisClient.setex(cacheKey, 600, JSON.stringify(forecast));
     }
     
     const alerts = forecast.products.filter((p: any) => p.status === 'critical' || p.status === 'low');

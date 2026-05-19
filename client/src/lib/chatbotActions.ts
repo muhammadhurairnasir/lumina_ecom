@@ -14,6 +14,7 @@ export async function executeChatActions(actions: any[] | undefined, router: { p
       if (type === 'ADD_TO_CART' && action.item?._id) {
         const res = await api.post('/cart/items', {
           productId: action.item._id,
+          slug: action.item.slug,
           quantity: action.quantity || 1,
         });
         setCart(res.data.data.cart);

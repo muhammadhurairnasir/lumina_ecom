@@ -136,6 +136,39 @@ export default function ChatMessage({ message }: { message: Message }) {
                 </button>
               );
             }
+            if (action.type === 'ORDER_TIMELINE') {
+              const steps: string[] = action.steps || ['pending', 'processing', 'shipped', 'delivered'];
+              const currentIdx = steps.findIndex((s: string) => s.toLowerCase() === (action.status || '').toLowerCase());
+              return (
+                <div key={i} className="bg-white border border-border rounded-xl p-3 my-2 max-w-[280px] shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-text-primary">Order #{action.orderId}</span>
+                    <span className="text-xs font-bold text-primary">${action.total?.toFixed(2)}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {steps.map((step: string, si: number) => {
+                      const isDone = si < currentIdx;
+                      const isCurrent = si === currentIdx;
+                      return (
+                        <div key={si} className="flex items-center space-x-2">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold ${
+                            isDone ? 'bg-green-500 text-white' : isCurrent ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'
+                          }`}>
+                            {isDone ? '✓' : si + 1}
+                          </div>
+                          <span className={`text-xs capitalize ${
+                            isCurrent ? 'font-bold text-primary' : isDone ? 'text-green-600' : 'text-gray-400'
+                          }`}>
+                            {step}
+                          </span>
+                          {isCurrent && <span className="text-[10px] text-primary font-medium">← Now</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            }
             return null;
           })}
         </div>
@@ -165,6 +198,7 @@ export default function ChatMessage({ message }: { message: Message }) {
               <button
                 key={i}
                 onClick={() => sendMessage(suggestion, router)}
+                aria-label={`Suggestion: ${suggestion}`}
                 className={`text-[11px] border font-medium px-2.5 py-1.5 rounded-full transition-colors whitespace-nowrap ${chipClass}`}
               >
                 {icon}{suggestion}

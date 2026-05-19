@@ -339,6 +339,13 @@ export const processChatMessage = async (
       } else {
         const latest: any = orders[0];
         reply += (reply ? '\n\n' : '') + `📦 **Latest Order** — $${latest.total?.toFixed(2)}\n\n${buildOrderTimeline(latest)}`;
+        actions.push({
+          type: 'ORDER_TIMELINE',
+          orderId: (latest._id as any).toString().slice(-6),
+          total: latest.total,
+          status: latest.orderStatus || latest.status || 'pending',
+          steps: ['pending', 'processing', 'shipped', 'delivered'],
+        });
         suggestions.push('Show all orders');
       }
     }
@@ -373,6 +380,10 @@ export const processChatMessage = async (
       const catLabel = extractedCategories.length > 0 ? extractedCategories.join('/') : 'products';
       const priceNote = priceLimit ? ` under $${priceLimit}` : '';
       reply += (reply ? '\n\n' : '') + `🛍️ **Here are the ${modeLabel}${catLabel}${priceNote}:**\n\n${formatProducts(shown)}`;
+      // Emit navigate actions so the frontend renders visual product cards
+      shown.slice(0, 3).forEach(p => {
+        actions.push({ type: 'navigate', action: 'navigate', slug: p.slug });
+      });
       suggestions.push(...shown.slice(0, 3).map(i => `Add ${i.name}`));
     } else {
       reply += (reply ? '\n\n' : '') + `😕 No products match those filters. Want me to show what's popular?`;
@@ -400,6 +411,27 @@ export const processChatMessage = async (
         const topRated = allProducts.sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 4);
         reply += (reply ? '\n\n' : '') + `⭐ **Top Rated Products:**\n\n${formatProducts(topRated)}`;
         suggestions.push(...topRated.slice(0, 3).map(i => `View ${i.name}`));
+      }
+
+      // Personalized recommendations based on purchase history
+      if (context.userId) {
+        try {
+          const userOrders = await Order.find({ user: context.userId }).limit(5).lean() as any[];
+          const purchasedIds = userOrders.flatMap((o: any) => (o.items || []).map((item: any) => item.product?.toString())).filter(Boolean);
+          if (purchasedIds.length > 0) {
+            const purchasedProds = await Product.find({ _id: { $in: purchasedIds } }).select('category').lean() as any[];
+            const catIds = [...new Set(purchasedProds.map((p: any) => (p.category?._id || p.category)?.toString()).filter(Boolean))];
+            if (catIds.length > 0) {
+              const personalized = allProducts
+                .filter(p => !purchasedIds.includes(p._id.toString()) && catIds.includes(((p.category as any)?._id || (p.category as any))?.toString() || ''))
+                .slice(0, 3);
+              if (personalized.length > 0) {
+                reply += `\n\n🎯 **Based on your purchase history:**\n\n${formatProducts(personalized)}`;
+                personalized.forEach(p => actions.push({ type: 'navigate', action: 'navigate', slug: p.slug }));
+              }
+            }
+          }
+        } catch { /* ignore */ }
       }
     } catch { /* ignore */ }
   }

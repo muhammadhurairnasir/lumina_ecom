@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { CategoryDocument } from './Category'; // Optional if we need full type later
+
 
 export interface ISeasonalRule extends Document {
   name: string;

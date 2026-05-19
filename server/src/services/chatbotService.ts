@@ -244,7 +244,7 @@ export const processChatMessage = async (
     // ── Intent flags ──────────────────────────────────────────────────────────
     const isOrderTrack = /\b(track|where.*(my|is)|status|history|past|orders?|previous|shipped|package|what did i (buy|purchase|get)|ready|ord-[\w-]+|\d{6,})\b/i.test(lowerMsg) && !/order.*product/.test(lowerMsg);
   const isFAQ = /\b(shipping|delivery|deliver|arrive|eta|refund|return|policy|how.*pay|payment|pay |pay\?|hours|open|close|closing|when.*open|contact|phone|email|cash|card|stripe|accepted)\b/.test(lowerMsg);
-  const isSearch = /show me|find|search|looking for|want|i need|do you have|what products|show more products|browse/.test(lowerMsg);
+  const isSearch = /show me|find|search|looking for|want|i need|do you have|what products|show.*products|browse/.test(lowerMsg);
   const isBudget = /under|below|less than|cheap|budget|affordable/.test(lowerMsg);
   const isRemove = /\b(remove|delete|take out|without|no )\b/.test(lowerMsg);
   const isClear = /clear.{0,5}cart|empty.{0,5}cart|wipe.{0,5}cart|reset.{0,5}cart/.test(lowerMsg);

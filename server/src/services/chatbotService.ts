@@ -111,10 +111,17 @@ const extractTargetTokens = (text: string, allProducts: ProductDoc[]): Target[] 
     if (!isNaN(parseInt(word))) { currentQty = parseInt(word); continue; }
     if (SKIP_WORDS.has(word)) continue;
 
+    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const twoWord = i < tokens.length - 1 ? `${word} ${tokens[i + 1]}` : null;
     let matchedItem: ProductDoc | undefined;
-    if (twoWord) matchedItem = allProducts.find(p => p.name.toLowerCase().includes(twoWord));
-    if (!matchedItem) matchedItem = allProducts.find(p => p.name.toLowerCase().includes(word));
+    if (twoWord) {
+      const regex = new RegExp(`\\b${escapeRegex(twoWord)}\\b`, 'i');
+      matchedItem = allProducts.find(p => regex.test(p.name));
+    }
+    if (!matchedItem) {
+      const regex = new RegExp(`\\b${escapeRegex(word)}\\b`, 'i');
+      matchedItem = allProducts.find(p => regex.test(p.name));
+    }
     if (!matchedItem && word.length > 4) matchedItem = allProducts.find(p => isFuzzyMatch(word, p.name));
 
     let matchedCategory: string | null = null;

@@ -30,13 +30,25 @@ function ProductsContent() {
   const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
 
   // Update URL when filters change
-  const applyFilters = () => {
+  const applyFilters = (overrides?: {
+    category?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    sort?: string;
+    page?: number;
+  }) => {
     const params = new URLSearchParams();
-    if (category) params.set('category', category);
-    if (minPrice) params.set('minPrice', minPrice);
-    if (maxPrice) params.set('maxPrice', maxPrice);
-    if (sort) params.set('sort', sort);
-    if (page > 1) params.set('page', page.toString());
+    const c = overrides?.category !== undefined ? overrides.category : category;
+    const min = overrides?.minPrice !== undefined ? overrides.minPrice : minPrice;
+    const max = overrides?.maxPrice !== undefined ? overrides.maxPrice : maxPrice;
+    const s = overrides?.sort !== undefined ? overrides.sort : sort;
+    const p = overrides?.page !== undefined ? overrides.page : page;
+
+    if (c) params.set('category', c);
+    if (min) params.set('minPrice', min);
+    if (max) params.set('maxPrice', max);
+    if (s) params.set('sort', s);
+    if (p > 1) params.set('page', p.toString());
     
     router.push(`${pathname}?${params.toString()}`);
     setMobileFiltersOpen(false);
@@ -109,7 +121,7 @@ function ProductsContent() {
             <span className="text-sm text-text-secondary">Sort by:</span>
             <select 
               value={sort} 
-              onChange={(e) => { setSort(e.target.value); setTimeout(applyFilters, 0); }}
+              onChange={(e) => { setSort(e.target.value); setPage(1); applyFilters({ sort: e.target.value, page: 1 }); }}
               className="border border-border rounded-md text-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary"
             >
               <option value="-createdAt">Newest Arrivals</option>
@@ -141,7 +153,7 @@ function ProductsContent() {
               <h3 className="font-semibold text-text-primary mb-4 pb-2 border-b border-border">Categories</h3>
               <div className="space-y-2">
                 <button 
-                  onClick={() => { setCategory(''); setTimeout(applyFilters, 0); }}
+                  onClick={() => { setCategory(''); setPage(1); applyFilters({ category: '', page: 1 }); }}
                   className={`block text-sm ${!category ? 'text-primary font-medium' : 'text-text-secondary hover:text-text-primary'}`}
                 >
                   All Categories
@@ -149,7 +161,7 @@ function ProductsContent() {
                 {(Array.isArray(categoriesData) ? categoriesData : []).map((cat: { _id: string; name: string; slug: string }) => (
                   <button
                     key={cat._id}
-                    onClick={() => { setCategory(cat.slug); setTimeout(applyFilters, 0); }}
+                    onClick={() => { setCategory(cat.slug); setPage(1); applyFilters({ category: cat.slug, page: 1 }); }}
                     className={`block text-sm ${category === cat.slug ? 'text-primary font-medium' : 'text-text-secondary hover:text-text-primary'}`}
                   >
                     {cat.name}
@@ -179,7 +191,7 @@ function ProductsContent() {
                 />
               </div>
               <button 
-                onClick={applyFilters}
+                onClick={() => applyFilters({ page: 1 })}
                 className="mt-4 w-full bg-surface border border-border text-text-primary py-2 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors"
               >
                 Apply
@@ -216,7 +228,7 @@ function ProductsContent() {
             <div className="text-center py-20">
               <h2 className="text-2xl font-bold mb-2">No products found</h2>
               <p className="text-text-secondary mb-6">Try adjusting your filters to find what you're looking for.</p>
-              <button onClick={() => { setCategory(''); setMinPrice(''); setMaxPrice(''); setTimeout(applyFilters, 0); }} className="text-primary font-medium hover:underline">
+              <button onClick={() => { setCategory(''); setMinPrice(''); setMaxPrice(''); setPage(1); applyFilters({ category: '', minPrice: '', maxPrice: '', page: 1 }); }} className="text-primary font-medium hover:underline">
                 Clear all filters
               </button>
             </div>
@@ -233,7 +245,7 @@ function ProductsContent() {
                 <div className="mt-12 flex justify-center items-center space-x-2">
                   <button 
                     disabled={page === 1}
-                    onClick={() => { setPage(p => p - 1); setTimeout(applyFilters, 0); }}
+                    onClick={() => { setPage(page - 1); applyFilters({ page: page - 1 }); }}
                     className="px-4 py-2 border border-border rounded-md text-sm font-medium disabled:opacity-50 hover:bg-gray-50"
                   >
                     Previous
@@ -243,7 +255,7 @@ function ProductsContent() {
                   </span>
                   <button 
                     disabled={page === totalPages}
-                    onClick={() => { setPage(p => p + 1); setTimeout(applyFilters, 0); }}
+                    onClick={() => { setPage(page + 1); applyFilters({ page: page + 1 }); }}
                     className="px-4 py-2 border border-border rounded-md text-sm font-medium disabled:opacity-50 hover:bg-gray-50"
                   >
                     Next
@@ -293,7 +305,7 @@ function ProductsContent() {
             </div>
 
             <div className="mt-6 border-t border-border pt-4">
-              <button onClick={applyFilters} className="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-primary-light hover:text-primary transition-colors">
+              <button onClick={() => { setPage(1); applyFilters({ page: 1 }); }} className="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-primary-light hover:text-primary transition-colors">
                 Apply Filters
               </button>
             </div>

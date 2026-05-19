@@ -19,7 +19,7 @@ export default function AddToCartForm({ product }: { product: any }) {
     setLoading(true);
     try {
       const res = await api.post('/cart/items', {
-        productId: product._id,
+        productId: product._id || product.id,
         quantity,
       });
       setCart(res.data.data.cart);

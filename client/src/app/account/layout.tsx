@@ -11,13 +11,19 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
   const { user, accessToken, logout } = useStore();
   const router = useRouter();
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    if (!accessToken && !user) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !accessToken && !user) {
       router.push('/login');
     }
-  }, [accessToken, user, router]);
+  }, [mounted, accessToken, user, router]);
 
-  if (!user) return null;
+  if (!mounted || !user) return null;
 
   const handleLogout = () => {
     logout();

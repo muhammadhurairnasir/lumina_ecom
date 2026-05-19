@@ -100,7 +100,7 @@ export async function calculateStockForecast(productId: string) {
   }
 
   return {
-    productId: product._id,
+    productId: product._id.toString(),
     productName: product.name,
     productImage: product.images?.[0]?.url || '',
     category: product.category?.name || 'Uncategorized',

@@ -18,9 +18,18 @@ export default function StockIntelligencePage() {
     name: '',
     tags: '',
     months: [] as number[],
+    categories: [] as string[],
     demandMultiplier: 1.0,
     description: '',
     isActive: true
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const res = await api.get('/categories');
+      return res.data.data.categories;
+    },
   });
 
   const { data: forecastData, isLoading: isLoadingForecast } = useQuery({
@@ -73,13 +82,14 @@ export default function StockIntelligencePage() {
         name: rule.name,
         tags: rule.tags.join(', '),
         months: rule.months,
+        categories: rule.categories || [],
         demandMultiplier: rule.demandMultiplier,
         description: rule.description,
         isActive: rule.isActive
       });
     } else {
       setEditingRule(null);
-      setRuleForm({ name: '', tags: '', months: [], demandMultiplier: 1.0, description: '', isActive: true });
+      setRuleForm({ name: '', tags: '', months: [], categories: [], demandMultiplier: 1.0, description: '', isActive: true });
     }
     setIsRuleModalOpen(true);
   };
@@ -90,6 +100,15 @@ export default function StockIntelligencePage() {
     setRuleForm(prev => ({
       ...prev,
       months: prev.months.includes(m) ? prev.months.filter(x => x !== m) : [...prev.months, m].sort((a,b)=>a-b)
+    }));
+  };
+
+  const toggleCategory = (catId: string) => {
+    setRuleForm(prev => ({
+      ...prev,
+      categories: prev.categories.includes(catId)
+        ? prev.categories.filter(id => id !== catId)
+        : [...prev.categories, catId]
     }));
   };
 
@@ -322,6 +341,27 @@ export default function StockIntelligencePage() {
                 <label className="block text-sm font-medium mb-1">Tags (comma separated)</label>
                 <input type="text" value={ruleForm.tags} onChange={e => setRuleForm(prev => ({...prev, tags: e.target.value}))} placeholder="summer, t-shirt, electronics" className="w-full border border-border rounded-lg px-3 py-2 text-sm" />
                 <p className="text-xs text-text-secondary mt-1">Leave empty to apply globally</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Apply to Categories (optional)
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Rule applies to ALL products in selected categories
+                </p>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  {categories.map((cat: any) => (
+                    <label key={cat._id} className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={ruleForm.categories.includes(cat._id)}
+                        onChange={() => toggleCategory(cat._id)}
+                        className="rounded border-gray-300"
+                      />
+                      {cat.name}
+                    </label>
+                  ))}
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Active Months</label>

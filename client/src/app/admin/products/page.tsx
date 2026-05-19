@@ -46,6 +46,9 @@ export default function AdminProductsPage() {
 
   const products = data?.products || [];
   const totalPages = data?.pages || 1;
+  const forecastMap = new Map(
+    forecastData?.products?.map((f: any) => [f.productId, f]) || []
+  );
 
   return (
     <div className="space-y-6">
@@ -162,7 +165,7 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="px-5 py-4">
                       {(() => {
-                        const forecast = forecastData?.products?.find((p: any) => p.productId === product._id);
+                        const forecast = forecastMap.get(product._id);
                         if (!forecast) return <span className="text-xs text-gray-400">Loading...</span>;
                         return (
                           <div className="flex flex-col gap-1.5 items-start">

@@ -12,13 +12,14 @@ export function getCurrentSeason(month: number): string {
   return "Unknown";
 }
 
-export async function getSeasonalMultiplier(product: any, currentMonth: number) {
-  const rules = await SeasonalRule.find({ isActive: true });
+export async function getSeasonalMultiplier(product: any, currentMonth: number, preFetchedRules?: any[]) {
+  const rules = preFetchedRules || await SeasonalRule.find({ isActive: true });
   
   const evergreenTags = ["evergreen", "all-season", "classic", "basic", "essential"];
   const productTags = product.tags || [];
+  const normalizedProductTags = productTags.map((t: string) => t.toLowerCase().trim());
   
-  const isEvergreen = productTags.some((t: string) => evergreenTags.includes(t.toLowerCase()));
+  const isEvergreen = normalizedProductTags.some((t: string) => evergreenTags.includes(t));
   if (isEvergreen) {
     return { multiplier: 1.0, rules: ["Evergreen Product"], isEvergreen: true };
   }
@@ -29,7 +30,8 @@ export async function getSeasonalMultiplier(product: any, currentMonth: number) 
   for (const rule of rules) {
     if (!rule.months.includes(currentMonth)) continue;
 
-    const hasTagOverlap = rule.tags.some((rt: string) => productTags.includes(rt));
+    const normalizedRuleTags = rule.tags.map((t: string) => t.toLowerCase().trim());
+    const hasTagOverlap = normalizedRuleTags.some((rt: string) => normalizedProductTags.includes(rt));
     const hasCategoryOverlap = rule.categories.some((rc: any) => rc.toString() === product.category?.toString());
     const isGlobal = rule.tags.length === 0 && rule.categories.length === 0;
 
@@ -46,7 +48,7 @@ export async function getSeasonalMultiplier(product: any, currentMonth: number) 
   };
 }
 
-export async function calculateStockForecast(productId: string) {
+export async function calculateStockForecast(productId: string, allRules?: any[]) {
   const product = await Product.findById(productId).populate('category', 'name').lean() as any;
   if (!product) throw new Error('Product not found');
 
@@ -65,7 +67,7 @@ export async function calculateStockForecast(productId: string) {
   const totalQuantitySold = recentOrders[0]?.sold || 0;
   const baseDailySales = totalQuantitySold / 30;
 
-  const seasonalResult = await getSeasonalMultiplier(product, currentMonth);
+  const seasonalResult = await getSeasonalMultiplier(product, currentMonth, allRules);
   const adjustedDailySales = baseDailySales * seasonalResult.multiplier;
   
   let daysOfStockLeft = 999;
@@ -98,6 +100,11 @@ export async function calculateStockForecast(productId: string) {
     const restock = Math.max(0, target - product.stock);
     recommendedRestockQty = Math.ceil(restock / 10) * 10;
   }
+  
+  if (status === 'no_sales' && product.stock < 10) {
+    statusReason = `No recent sales, but only ${product.stock} units remain in stock — consider restocking`;
+    recommendedRestockQty = 20; // minimum restock suggestion
+  }
 
   return {
     productId: product._id.toString(),
@@ -121,12 +128,19 @@ export async function calculateStockForecast(productId: string) {
 
 export async function getForecastForAllProducts() {
   const products = await Product.find({ isActive: true }).select('_id').lean();
+  const allRules = await SeasonalRule.find({ isActive: true }).lean();
   
   const forecasts = await Promise.all(
-    products.map(p => calculateStockForecast(p._id.toString()))
+    products.map(p => calculateStockForecast(p._id.toString(), allRules))
   );
 
-  forecasts.sort((a, b) => a.daysOfStockLeft - b.daysOfStockLeft);
+  const priorityOrder: Record<string, number> = { critical: 0, low: 1, no_sales: 2, healthy: 3, overstocked: 4 };
+  forecasts.sort((a, b) => {
+    const aPriority = priorityOrder[a.status] ?? 3;
+    const bPriority = priorityOrder[b.status] ?? 3;
+    if (aPriority !== bPriority) return aPriority - bPriority;
+    return a.daysOfStockLeft - b.daysOfStockLeft;
+  });
 
   const summary = {
     critical: forecasts.filter(f => f.status === 'critical').length,

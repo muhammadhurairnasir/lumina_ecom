@@ -27,6 +27,7 @@ interface ProductFormValues {
   seoTitle: string;
   seoDescription: string;
   seoKeywords: string;
+  tags: string;
   isActive: boolean;
   isFeatured: boolean;
 }
@@ -52,6 +53,7 @@ export default function AdminProductForm({ productId }: { productId?: string }) 
       seoTitle: '',
       seoDescription: '',
       seoKeywords: '',
+      tags: '',
       isActive: true,
       isFeatured: false,
     },
@@ -87,6 +89,7 @@ export default function AdminProductForm({ productId }: { productId?: string }) 
       seoTitle: existingProduct.seoTitle || '',
       seoDescription: existingProduct.seoDescription || '',
       seoKeywords: (existingProduct.seoKeywords || []).join(', '),
+      tags: (existingProduct.tags || []).join(', '),
       isActive: existingProduct.isActive !== false,
       isFeatured: Boolean(existingProduct.isFeatured),
     });
@@ -147,6 +150,7 @@ export default function AdminProductForm({ productId }: { productId?: string }) 
         images,
         specifications: specs.filter((s) => s.key && s.value),
         seoKeywords: data.seoKeywords,
+        tags: data.tags ? data.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
         compareAtPrice: data.compareAtPrice || undefined,
       };
 
@@ -298,6 +302,15 @@ export default function AdminProductForm({ productId }: { productId?: string }) 
             <div>
               <label className="block text-sm font-medium mb-1">Brand</label>
               <input type="text" {...register('brand')} className="w-full border border-border rounded-lg px-4 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Tags</label>
+              <input type="text" {...register('tags')} placeholder="summer, evergreen, electronics" className="w-full border border-border rounded-lg px-4 py-2 text-sm" />
+              <p className="text-xs text-text-secondary mt-1.5 leading-relaxed bg-blue-50/50 p-2 rounded border border-blue-100">
+                💡 <strong>Tags power the AI stock forecast system.</strong><br/>
+                Seasonal tags: <em>'summer', 'winter', 'holiday', 'electronics', 'accessories'</em> trigger demand multipliers automatically.<br/>
+                Use <em>'evergreen'</em> or <em>'all-season'</em> for products that sell consistently year-round. Applied automatically to all future products.
+              </p>
             </div>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" {...register('isActive')} className="rounded" />

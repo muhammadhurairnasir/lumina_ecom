@@ -8,6 +8,9 @@ import Voucher from '../models/Voucher';
 import { ApiResponse } from '../utils/apiResponse';
 import { AppError } from '../utils/appError';
 import { generateProductSEO } from '../services/aiService';
+import redisClient from '../config/redis';
+import SeasonalRule from '../models/SeasonalRule';
+import { getForecastForAllProducts, calculateStockForecast } from '../services/stockForecastService';
 
 const REVENUE_STATUSES = ['confirmed', 'processing', 'shipped', 'delivered'];
 const ORDER_STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'] as const;
@@ -283,6 +286,9 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
         });
       }).catch(console.error);
     }
+    
+    // Invalidate stock forecast cache on product update
+    await redisClient.del('stock:forecast');
 
     return ApiResponse.success(res, { product }, 'Product updated');
   } catch (error) {
@@ -505,3 +511,89 @@ export const deleteVoucher = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
+
+// ─── STOCK INTELLIGENCE & FORECAST ───────────────────────────────────────────
+
+export const getStockForecast = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const cacheKey = 'stock:forecast';
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      return ApiResponse.success(res, JSON.parse(cached));
+    }
+    const forecast = await getForecastForAllProducts();
+    await redisClient.set(cacheKey, JSON.stringify(forecast), 'EX', 600); // 10 minutes cache
+    return ApiResponse.success(res, forecast);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getProductForecast = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const forecast = await calculateStockForecast(req.params.productId);
+    return ApiResponse.success(res, forecast);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getStockAlerts = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const cacheKey = 'stock:forecast';
+    let forecast;
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      forecast = JSON.parse(cached);
+    } else {
+      forecast = await getForecastForAllProducts();
+      await redisClient.set(cacheKey, JSON.stringify(forecast), 'EX', 600);
+    }
+    
+    const alerts = forecast.products.filter((p: any) => p.status === 'critical' || p.status === 'low');
+    return ApiResponse.success(res, { alerts, summary: forecast.summary });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getSeasonalRules = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const rules = await SeasonalRule.find().sort('name').lean();
+    return ApiResponse.success(res, { rules });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createSeasonalRule = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const rule = await SeasonalRule.create(req.body);
+    await redisClient.del('stock:forecast');
+    return ApiResponse.created(res, { rule }, 'Seasonal rule created');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateSeasonalRule = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const rule = await SeasonalRule.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!rule) return next(new AppError('Rule not found', 404));
+    await redisClient.del('stock:forecast');
+    return ApiResponse.success(res, { rule }, 'Seasonal rule updated');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteSeasonalRule = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await SeasonalRule.findByIdAndDelete(req.params.id);
+    await redisClient.del('stock:forecast');
+    return ApiResponse.success(res, null, 'Seasonal rule deleted');
+  } catch (error) {
+    next(error);
+  }
+};
+

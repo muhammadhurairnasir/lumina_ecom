@@ -7,6 +7,7 @@ import Product from '../models/Product';
 import { ApiResponse } from '../utils/apiResponse';
 import { AppError } from '../utils/appError';
 import { sendOrderConfirmation, sendOrderStatusUpdate } from '../services/emailService';
+import redisClient from '../config/redis';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2023-10-16', // using a fixed api version
@@ -175,6 +176,9 @@ export const stripeWebhook = async (req: Request, res: Response, _next: NextFunc
       // Clear the cart
       const cartQuery = order.user ? { user: order.user } : { sessionId: order.sessionId };
       await Cart.findOneAndDelete(cartQuery);
+      
+      // Invalidate stock forecast cache
+      await redisClient.del('stock:forecast');
 
       // Send Order Confirmation Email async (not blocking webhook)
       // Attempt to get email if user exists, else from order shipping address email if collected (assuming populated)
@@ -255,6 +259,9 @@ export const confirmOrder = async (req: Request, res: Response, next: NextFuncti
       // Clear the cart
       const cartQuery = order.user ? { user: order.user } : { sessionId: order.sessionId };
       await Cart.findOneAndDelete(cartQuery);
+      
+      // Invalidate stock forecast cache
+      await redisClient.del('stock:forecast');
 
       // Send Order Confirmation Email async
       if (order.user) {

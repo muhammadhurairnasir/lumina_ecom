@@ -20,6 +20,14 @@ export default function AdminProductsPage() {
     },
   });
 
+  const { data: forecastData } = useQuery({
+    queryKey: ['admin-stock-forecast'],
+    queryFn: async () => {
+      const res = await api.get('/admin/stock/forecast');
+      return res.data.data;
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => api.delete(`/admin/products/${id}`),
     onSuccess: () => {
@@ -79,6 +87,7 @@ export default function AdminProductsPage() {
                 <th className="px-5 py-3 font-medium">Price</th>
                 <th className="px-5 py-3 font-medium">Stock</th>
                 <th className="px-5 py-3 font-medium">AI Forecast</th>
+                <th className="px-5 py-3 font-medium">Stock Forecast</th>
                 <th className="px-5 py-3 font-medium">Status</th>
                 <th className="px-5 py-3 font-medium text-right">Actions</th>
               </tr>
@@ -150,6 +159,42 @@ export default function AdminProductsPage() {
                       ) : (
                         <span className="text-xs text-gray-400">Loading...</span>
                       )}
+                    </td>
+                    <td className="px-5 py-4">
+                      {(() => {
+                        const forecast = forecastData?.products?.find((p: any) => p.productId === product._id);
+                        if (!forecast) return <span className="text-xs text-gray-400">Loading...</span>;
+                        return (
+                          <div className="flex flex-col gap-1.5 items-start">
+                            <span className={`inline-flex px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded-md ${
+                              forecast.status === 'critical' ? 'bg-red-100 text-red-700' :
+                              forecast.status === 'low' ? 'bg-orange-100 text-orange-700' :
+                              forecast.status === 'healthy' ? 'bg-green-100 text-green-700' :
+                              forecast.status === 'overstocked' ? 'bg-blue-100 text-blue-700' :
+                              'bg-gray-100 text-gray-600'
+                            }`}>
+                              {forecast.daysOfStockLeft} Days Left
+                            </span>
+                            <div className="flex flex-wrap gap-1">
+                              {forecast.isEvergreen && (
+                                <span className="text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full flex items-center gap-0.5">
+                                  🌿
+                                </span>
+                              )}
+                              {forecast.seasonalMultiplier > 1.0 && (
+                                <span className="text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded-full">
+                                  {forecast.seasonalMultiplier}x
+                                </span>
+                              )}
+                              {(forecast.status === 'critical' || forecast.status === 'low') && (
+                                <span className="text-[10px] text-text-secondary font-medium">
+                                  Restock: {forecast.recommendedRestockQty}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="px-5 py-4">
                       <button

@@ -47,6 +47,15 @@ export default function AdminDashboard() {
     refetchInterval: 15000,
   });
 
+  const { data: stockAlerts } = useQuery({
+    queryKey: ['admin-stock-alerts'],
+    queryFn: async () => {
+      const res = await api.get('/admin/stock/alerts');
+      return res.data.data;
+    },
+    refetchInterval: 60000,
+  });
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -78,6 +87,75 @@ export default function AdminDashboard() {
           Auto-refreshes every 30s
         </span>
       </div>
+
+      {/* Stock Alerts Widget */}
+      {stockAlerts?.summary && (stockAlerts.summary.critical > 0 || stockAlerts.summary.low > 0) && (
+        <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden mb-6">
+          <div className="p-4 border-b border-border flex items-center justify-between bg-gray-50">
+            <div className="flex items-center gap-3">
+              <h2 className="font-bold text-text-primary flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-amber-500" /> Stock Intelligence Alerts
+              </h2>
+              <span className="text-sm font-medium px-2.5 py-1 bg-blue-100 text-blue-700 rounded-md">
+                🌤 Current Season: {stockAlerts.summary.currentSeason}
+              </span>
+            </div>
+            <Link href="/admin/stock" className="text-sm text-blue-600 font-medium hover:underline flex items-center gap-1">
+              View Full Forecast <ArrowUpRight className="w-4 h-4" />
+            </Link>
+          </div>
+          
+          {stockAlerts.summary.critical > 0 && (
+            <div className="bg-red-500 text-white text-sm font-medium px-4 py-2 flex items-center gap-2">
+              🚨 {stockAlerts.summary.critical} products critically low — under 7 days of stock
+            </div>
+          )}
+          {stockAlerts.summary.low > 0 && (
+            <div className="bg-orange-500 text-white text-sm font-medium px-4 py-2 flex items-center gap-2">
+              ⚠️ {stockAlerts.summary.low} products running low — under 30 days of stock
+            </div>
+          )}
+
+          <div className="divide-y divide-border">
+            {stockAlerts.alerts.map((alert: any) => (
+              <div key={alert.productId} className={`p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${alert.status === 'critical' ? 'bg-red-50/30' : 'bg-orange-50/30'}`}>
+                <div className="flex items-center gap-3">
+                  {alert.productImage ? (
+                    <img src={alert.productImage} alt={alert.productName} className="w-10 h-10 rounded border border-border object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 rounded border border-border bg-gray-100 flex items-center justify-center">
+                      <Package className="w-5 h-5 text-gray-400" />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-medium text-text-primary">{alert.productName}</h3>
+                    <p className="text-xs text-text-secondary mt-0.5">
+                      Stock: <strong className="text-text-primary">{alert.currentStock}</strong>
+                      {' • '}
+                      <span className="text-text-primary">Rec. Restock: {alert.recommendedRestockQty}</span>
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {alert.isEvergreen && (
+                    <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 bg-green-100 text-green-700 rounded-full flex items-center gap-1">
+                      🌿 Evergreen
+                    </span>
+                  )}
+                  {alert.seasonalMultiplier > 1.0 && (
+                    <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+                      {alert.seasonalMultiplier}x {alert.activeSeasonalRules[0] || 'Seasonal Boost'}
+                    </span>
+                  )}
+                  <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-md ${alert.status === 'critical' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
+                    {alert.daysOfStockLeft} Days Left
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

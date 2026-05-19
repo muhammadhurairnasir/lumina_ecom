@@ -64,6 +64,15 @@ router.post('/vouchers', admin.createVoucher);
 router.put('/vouchers/:id', admin.updateVoucher);
 router.delete('/vouchers/:id', admin.deleteVoucher);
 
+// Stock Intelligence
+router.get('/stock/forecast', admin.getStockForecast);
+router.get('/stock/forecast/:productId', admin.getProductForecast);
+router.get('/stock/alerts', admin.getStockAlerts);
+router.get('/stock/seasonal-rules', admin.getSeasonalRules);
+router.post('/stock/seasonal-rules', admin.createSeasonalRule);
+router.patch('/stock/seasonal-rules/:id', admin.updateSeasonalRule);
+router.delete('/stock/seasonal-rules/:id', admin.deleteSeasonalRule);
+
 // Blog
 router.get('/blog', blog.adminGetPosts);
 router.get('/blog/:id', blog.adminGetPost);

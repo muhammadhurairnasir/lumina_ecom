@@ -32,7 +32,7 @@ export async function getSeasonalMultiplier(product: any, currentMonth: number, 
 
     const normalizedRuleTags = rule.tags.map((t: string) => t.toLowerCase().trim());
     const hasTagOverlap = normalizedRuleTags.some((rt: string) => normalizedProductTags.includes(rt));
-    const hasCategoryOverlap = rule.categories.some((rc: any) => rc.toString() === product.category?.toString());
+    const hasCategoryOverlap = rule.categories.some((rc: any) => rc.toString() === product.category?._id?.toString());
     const isGlobal = rule.tags.length === 0 && rule.categories.length === 0;
 
     if (hasTagOverlap || hasCategoryOverlap || isGlobal) {

@@ -31,6 +31,7 @@ function RegisterForm() {
   
   const [showPassword, setShowPassword] = useState(false);
   const setAuth = useStore(state => state.setAuth);
+  const setCart = useStore(state => state.setCart);
 
   const {
     register,
@@ -48,11 +49,20 @@ function RegisterForm() {
       const { accessToken, user } = res.data.data;
       setAuth(accessToken, user);
 
-      // Merge guest cart to user cart
+      // Merge guest cart into user cart and sync store
       try {
-        await api.post('/cart/merge');
-      } catch (mergeErr) {
-        console.error('Failed to merge cart', mergeErr);
+        const mergeRes = await api.post('/cart/merge');
+        if (mergeRes.data?.data?.cart) {
+          setCart(mergeRes.data.data.cart);
+        } else {
+          const cartRes = await api.get('/cart');
+          if (cartRes.data?.data?.cart) setCart(cartRes.data.data.cart);
+        }
+      } catch {
+        try {
+          const cartRes = await api.get('/cart');
+          if (cartRes.data?.data?.cart) setCart(cartRes.data.data.cart);
+        } catch { /* ignore */ }
       }
 
       toast.success('Account created successfully!');

@@ -25,6 +25,7 @@ function LoginForm() {
   
   const [showPassword, setShowPassword] = useState(false);
   const setAuth = useStore(state => state.setAuth);
+  const setCart = useStore(state => state.setCart);
 
   const {
     register,
@@ -39,12 +40,25 @@ function LoginForm() {
       const res = await api.post('/auth/login', data);
       const { accessToken, user } = res.data.data;
       setAuth(accessToken, user);
-      
-      // Merge guest cart to user cart
+
+      // Merge guest cart into user cart and sync store
       try {
-        await api.post('/cart/merge');
+        const mergeRes = await api.post('/cart/merge');
+        if (mergeRes.data?.data?.cart) {
+          setCart(mergeRes.data.data.cart);
+        } else {
+          // No guest cart was merged — just fetch the user's existing cart
+          const cartRes = await api.get('/cart');
+          if (cartRes.data?.data?.cart) {
+            setCart(cartRes.data.data.cart);
+          }
+        }
       } catch (mergeErr) {
-        console.error('Failed to merge cart', mergeErr);
+        // Non-fatal: cart merge failed, try fetching user cart directly
+        try {
+          const cartRes = await api.get('/cart');
+          if (cartRes.data?.data?.cart) setCart(cartRes.data.data.cart);
+        } catch { /* ignore */ }
       }
 
       toast.success('Welcome back!');

@@ -281,12 +281,17 @@ export const mergeGuestCart = async (req: Request, res: Response, next: NextFunc
     }
 
     await userCart.save();
+    await userCart.populate('items.product', 'name slug images price stock');
     
     // Delete guest cart
     await Cart.findByIdAndDelete(guestCart._id);
     
-    // Clear cookie
-    res.clearCookie('cartSessionId');
+    // Clear the guest session cookie
+    res.clearCookie('cartSessionId', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
 
     return ApiResponse.success(res, { cart: userCart }, 'Carts merged successfully');
   } catch (error) {

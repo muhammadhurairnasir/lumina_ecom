@@ -16,7 +16,8 @@ import {
   LogOut,
   Menu,
   X,
-  FileText
+  FileText,
+  TrendingUp
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { api } from '@/lib/api';
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'Dashboard',  href: '/admin',           icon: LayoutDashboard },
   { name: 'Products',   href: '/admin/products',   icon: Package },
   { name: 'Categories', href: '/admin/categories', icon: Tags },
+  { name: 'Stock',      href: '/admin/stock',      icon: TrendingUp },
   { name: 'Orders',     href: '/admin/orders',     icon: ShoppingCart },
   { name: 'Customers',  href: '/admin/customers',  icon: Users },
   { name: 'Vouchers',   href: '/admin/vouchers',   icon: Ticket },

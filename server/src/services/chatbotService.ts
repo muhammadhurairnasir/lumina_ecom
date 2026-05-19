@@ -279,6 +279,7 @@ export const processChatMessage = async (
   const formatProducts = (items: ProductDoc[]) =>
     items.map(i => `• [**${i.name}**](/products/${i.slug}) — $${i.price.toFixed(2)}${i.compareAtPrice ? ` ~~$${i.compareAtPrice.toFixed(2)}~~` : ''}`).join('\n');
 
+  let handledSpecificTarget = false;
   // ── Cart actions ────────────────────────────────────────────────────────
   if (targets.length > 0 && hasExplicitCartIntent) {
     const added: any[] = [];
@@ -308,6 +309,7 @@ export const processChatMessage = async (
       if (removed.length > 0) msg += `🗑️ Removed ${removed.map(r => `[**${r.name}**](/products/${r.slug})`).join(', ')}. `;
       if (added.length > 0) msg += `🛒 Added ${added.map(a => `${a.quantity}x [**${a.item.name}**](/products/${a.item.slug})`).join(', ')} to your cart!`;
       reply = msg;
+      handledSpecificTarget = true;
       
       if (added.length > 0 && removed.length === 0) {
         suggestions.push(...added.slice(0, 2).map(a => `Remove ${a.item.name}`), 'View Cart', 'Show more products');
@@ -320,12 +322,13 @@ export const processChatMessage = async (
   }
 
   // ── View Product ────────────────────────────────────────────────────────
-  if (isViewProduct && targets.length > 0) {
+  if (!handledSpecificTarget && targets.length > 0 && !isPairing) {
     const target = targets.find(t => t.type === 'specific');
-    if (target?.product) {
+    if (target?.product && (isViewProduct || isSearch || reply === '')) {
       reply = `Here is the product you asked for: **${target.product.name}**`;
       actions.push({ type: 'navigate', action: 'navigate', slug: target.product.slug });
       suggestions.push(`Add ${target.product.name}`, 'View Cart', "What's trending?");
+      handledSpecificTarget = true;
     }
   }
 
@@ -424,7 +427,9 @@ export const processChatMessage = async (
   }
 
   // ── Product search / filters ──────────────────────────────────────────────
-  if (isSearch || isBudget || isRating || extractedCategories.length > 0 || isCheapest || isExpensive) {
+  const shouldSearch = (isSearch || isBudget || isRating || extractedCategories.length > 0 || isCheapest || isExpensive) && !handledSpecificTarget;
+
+  if (shouldSearch) {
     let filtered = applyFilters(allProducts);
     if (isExpensive) filtered = filtered.sort((a, b) => b.price - a.price);
     else filtered = filtered.sort((a, b) => a.price - b.price);

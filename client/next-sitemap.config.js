@@ -1,15 +1,27 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://thelumina.shop',
   generateRobotsTxt: true,
   robotsTxtOptions: {
     policies: [
+      // Allow all crawlers access to public content
       { userAgent: '*', allow: '/' },
+      // Block private/admin areas from all bots
       { userAgent: '*', disallow: '/admin' },
+      { userAgent: '*', disallow: '/admin/*' },
+      { userAgent: '*', disallow: '/account' },
+      { userAgent: '*', disallow: '/account/*' },
+      { userAgent: '*', disallow: '/cart' },
+      { userAgent: '*', disallow: '/checkout' },
+      { userAgent: '*', disallow: '/checkout/*' },
       { userAgent: '*', disallow: '/api/' },
+      { userAgent: '*', disallow: '/login' },
+      { userAgent: '*', disallow: '/register' },
+      // Allow Google Image bot to index product images
+      { userAgent: 'Googlebot-Image', allow: '/' },
     ],
   },
-  exclude: ['/admin', '/admin/*', '/account', '/account/*'],
+  exclude: ['/admin', '/admin/*', '/account', '/account/*', '/cart', '/checkout', '/checkout/*', '/login', '/register'],
   additionalPaths: async (_config) => {
     try {
       const apiUrl =

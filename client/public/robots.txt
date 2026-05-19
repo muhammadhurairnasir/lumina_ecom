@@ -8,10 +8,46 @@ Disallow: /admin
 
 # *
 User-agent: *
+Disallow: /admin/*
+
+# *
+User-agent: *
+Disallow: /account
+
+# *
+User-agent: *
+Disallow: /account/*
+
+# *
+User-agent: *
+Disallow: /cart
+
+# *
+User-agent: *
+Disallow: /checkout
+
+# *
+User-agent: *
+Disallow: /checkout/*
+
+# *
+User-agent: *
 Disallow: /api/
 
+# *
+User-agent: *
+Disallow: /login
+
+# *
+User-agent: *
+Disallow: /register
+
+# Googlebot-Image
+User-agent: Googlebot-Image
+Allow: /
+
 # Host
-Host: http://localhost:3000
+Host: https://thelumina.shop
 
 # Sitemaps
-Sitemap: http://localhost:3000/sitemap.xml
+Sitemap: https://thelumina.shop/sitemap.xml

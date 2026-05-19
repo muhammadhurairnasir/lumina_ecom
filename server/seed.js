@@ -46,6 +46,37 @@ productSchema.pre('save', function (next) {
   next();
 });
 
+const LOCAL_KEYWORDS = {
+  electronics: ['gadget', 'tech', 'device', 'smart', 'wireless', 'bluetooth', 'fast', 'premium', 'high-quality', 'portable', 'latest'],
+  fashion: ['apparel', 'clothing', 'stylish', 'trendy', 'comfortable', 'cotton', 'design', 'fashionable', 'wear', 'modern', 'look'],
+  home: ['decor', 'furniture', 'kitchen', 'living', 'comfortable', 'modern', 'elegant', 'durable', 'design', 'cozy', 'aesthetic'],
+  accessories: ['jewelry', 'leather', 'stylish', 'gift', 'premium', 'accessory', 'elegant', 'fashion', 'luxury'],
+  default: ['premium', 'quality', 'best price', 'buy online', 'new', 'top rated', 'exclusive', 'shop', 'best seller']
+};
+
+const STOP_WORDS = new Set(['the', 'and', 'or', 'with', 'a', 'an', 'in', 'of', 'for', 'to', 'on', 'is', 'it', 'this', 'that', 'with']);
+
+const generateProductSEO = (product) => {
+  const cat = (product.categoryName || 'General').toLowerCase();
+  let baseKeywords = LOCAL_KEYWORDS.default;
+  for (const [key, words] of Object.entries(LOCAL_KEYWORDS)) {
+    if (cat.includes(key)) {
+      baseKeywords = words;
+      break;
+    }
+  }
+  const nameTokens = product.name
+    .toLowerCase()
+    .replace(/[^\w\s]/gi, '')
+    .split(/\s+/)
+    .filter(w => w.length > 3 && !STOP_WORDS.has(w));
+  const keywords = [...new Set([...(product.tags || []), ...nameTokens, ...baseKeywords])].slice(0, 8);
+  const seoTitle = `Buy ${product.name} | Premium ${product.categoryName || 'General'} Online`.substring(0, 60);
+  const shortDesc = product.description.replace(/[^\w\s.]/gi, '').substring(0, 80).trim();
+  const seoDescription = `Shop the ${product.name}. ${shortDesc}... Discover top-quality ${product.categoryName || 'General'} at amazing prices today.`.substring(0, 160);
+  return { seoTitle, seoDescription, seoKeywords: keywords };
+};
+
 const voucherSchema = new mongoose.Schema({
   code: String, type: String, value: Number,
   minOrderAmount: { type: Number, default: 0 },
@@ -464,7 +495,19 @@ async function seed() {
   // ── Seed Products ───────────────────────────────────────────────────────
   console.log('\n🛍️  Seeding products...');
   const productData = buildProducts(cats);
-  const products = await Product.insertMany(productData);
+  const productsWithSEO = productData.map((prod) => {
+    const catObj = cats.find(c => c._id.toString() === prod.category.toString());
+    const categoryName = catObj ? catObj.name : 'General';
+    const seo = generateProductSEO({
+      name: prod.name,
+      description: prod.description,
+      categoryName,
+      tags: prod.tags || [],
+      price: prod.price,
+    });
+    return { ...prod, ...seo };
+  });
+  const products = await Product.insertMany(productsWithSEO);
   products.forEach(p => console.log(`   ✓ ${p.name} — $${p.price}`));
 
   // ── Seed Vouchers ───────────────────────────────────────────────────────

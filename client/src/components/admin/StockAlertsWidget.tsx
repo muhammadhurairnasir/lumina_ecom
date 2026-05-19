@@ -3,11 +3,13 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
 
-interface AlertSummary {
-  critical: number
-  low: number
-  currentSeason: string
-  products: Array<{
+interface AlertData {
+  summary: {
+    critical: number
+    low: number
+    currentSeason: string
+  }
+  alerts: Array<{
     productName: string
     currentStock: number
     daysOfStockLeft: number
@@ -19,7 +21,7 @@ interface AlertSummary {
 }
 
 export default function StockAlertsWidget() {
-  const [alerts, setAlerts] = useState<AlertSummary | null>(null)
+  const [alerts, setAlerts] = useState<AlertData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -31,14 +33,14 @@ export default function StockAlertsWidget() {
 
   if (loading) return null
   if (!alerts) return null
-  if (alerts.critical === 0 && alerts.low === 0) return null
+  if (alerts.summary.critical === 0 && alerts.summary.low === 0) return null
 
   return (
     <div className="mb-6 rounded-xl border border-gray-200 overflow-hidden">
       {/* Season header */}
       <div className="bg-blue-50 border-b border-gray-200 px-4 py-2 flex items-center justify-between">
         <span className="text-sm font-medium text-blue-700">
-          🌤 Current Season: {alerts.currentSeason}
+          🌤 Current Season: {alerts.summary.currentSeason}
         </span>
         <Link href="/admin/stock" className="text-sm text-blue-600 hover:underline font-medium">
           View Full Forecast →
@@ -46,26 +48,26 @@ export default function StockAlertsWidget() {
       </div>
 
       {/* Critical bar */}
-      {alerts.critical > 0 && (
+      {alerts.summary.critical > 0 && (
         <div className="bg-red-50 border-b border-red-100 px-4 py-2">
           <p className="text-sm font-semibold text-red-700">
-            🚨 {alerts.critical} product{alerts.critical > 1 ? 's' : ''} critically low — under 7 days of stock
+            🚨 {alerts.summary.critical} product{alerts.summary.critical > 1 ? 's' : ''} critically low — under 7 days of stock
           </p>
         </div>
       )}
 
       {/* Low bar */}
-      {alerts.low > 0 && (
+      {alerts.summary.low > 0 && (
         <div className="bg-orange-50 border-b border-orange-100 px-4 py-2">
           <p className="text-sm font-semibold text-orange-700">
-            ⚠️ {alerts.low} product{alerts.low > 1 ? 's' : ''} running low — under 30 days of stock
+            ⚠️ {alerts.summary.low} product{alerts.summary.low > 1 ? 's' : ''} running low — under 30 days of stock
           </p>
         </div>
       )}
 
       {/* Product list */}
       <div className="divide-y divide-gray-200 bg-white">
-        {alerts.products
+        {(alerts.alerts || [])
           .filter(p => p.daysOfStockLeft < 30)
           .slice(0, 5)
           .map((p, i) => (

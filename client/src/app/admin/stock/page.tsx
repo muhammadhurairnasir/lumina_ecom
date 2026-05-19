@@ -27,7 +27,7 @@ export default function StockIntelligencePage() {
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const res = await api.get('/categories');
+      const res = await api.get('/admin/categories');
       return res.data.data.categories;
     },
   });

@@ -16,9 +16,15 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
 
     const query: any = { isActive: true };
 
-    // Search
+    // Search (case-insensitive partial matching)
     if (search) {
-      query.$text = { $search: search as string };
+      const searchStr = String(search).trim();
+      query.$or = [
+        { name: { $regex: searchStr, $options: 'i' } },
+        { description: { $regex: searchStr, $options: 'i' } },
+        { brand: { $regex: searchStr, $options: 'i' } },
+        { tags: { $regex: searchStr, $options: 'i' } }
+      ];
     }
 
     // Filters
@@ -43,37 +49,33 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
 
     // Sorting (supports legacy keys + frontend query values)
     let sortOptions: any = {};
-    if (search) {
-      sortOptions.score = { $meta: 'textScore' };
-    } else {
-      const sortKey = String(sort || '-createdAt');
-      switch (sortKey) {
-        case 'price':
-        case 'price_asc':
-          sortOptions.price = 1;
-          break;
-        case '-price':
-        case 'price_desc':
-          sortOptions.price = -1;
-          break;
-        case 'rating':
-        case '-rating':
-          sortOptions.rating = -1;
-          break;
-        case 'newest':
-        case '-createdAt':
-          sortOptions.createdAt = -1;
-          break;
-        case 'createdAt':
-          sortOptions.createdAt = 1;
-          break;
-        case 'popular':
-        case '-viewCount':
-          sortOptions.viewCount = -1;
-          break;
-        default:
-          sortOptions.createdAt = -1;
-      }
+    const sortKey = String(sort || '-createdAt');
+    switch (sortKey) {
+      case 'price':
+      case 'price_asc':
+        sortOptions.price = 1;
+        break;
+      case '-price':
+      case 'price_desc':
+        sortOptions.price = -1;
+        break;
+      case 'rating':
+      case '-rating':
+        sortOptions.rating = -1;
+        break;
+      case 'newest':
+      case '-createdAt':
+        sortOptions.createdAt = -1;
+        break;
+      case 'createdAt':
+        sortOptions.createdAt = 1;
+        break;
+      case 'popular':
+      case '-viewCount':
+        sortOptions.viewCount = -1;
+        break;
+      default:
+        sortOptions.createdAt = -1;
     }
 
     // Pagination
@@ -81,7 +83,7 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
     const limitNumber = Number(limit) || 12;
     const skip = (pageNumber - 1) * limitNumber;
 
-    const products = await Product.find(query, search ? { score: { $meta: 'textScore' } } : {})
+    const products = await Product.find(query)
       .sort(sortOptions)
       .skip(skip)
       .limit(limitNumber)

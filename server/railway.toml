@@ -3,7 +3,7 @@ builder = "NIXPACKS"
 buildCommand = "npm install --include=dev && npm run build --workspace=@ecommerce/server"
 
 [deploy]
-preDeployCommand = "node server/seed.js"
+
 startCommand = "node server/dist/server.js"
 healthcheckPath = "/api/v1/health"
 healthcheckTimeout = 60
